@@ -265,12 +265,14 @@
 
   <modules>
     <module>portal</module>
+    <!--   
+    <module>web</module>
+    <module>service</module>
+    -->
     <module>core</module>
     <module>business</module>
-    <module>web</module>
     <module>model</module>
     <module>persistence</module>
-    <module>service</module>
     <module>scripts</module>
     <module>db-scripts</module>
     <module>security</module>

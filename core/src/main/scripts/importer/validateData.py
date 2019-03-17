@@ -1079,7 +1079,7 @@ class MicrobeAbundanceValidator(FeaturewiseFileValidator):
     """FeatureWiseValidator that has  id as feature columns."""
 
     REQUIRED_HEADERS = ['NCBI_Taxonomy_ID']
-    OPTIONAL_HEADERS = []
+    OPTIONAL_HEADERS = ['NCBI_Taxonomy_Name']
     ALLOW_BLANKS = True
     NULL_VALUES = ["NA"]
 
@@ -1091,16 +1091,9 @@ class MicrobeAbundanceValidator(FeaturewiseFileValidator):
         num_errors = super(GenewiseFileValidator, self).checkHeader(cols)
         # see if at least one of the gene identifiers is in the right place
 
-        if ('NCBI_Taxonomy_ID' in self.sampleIds or
-                  'ncbi_taxonomy_id' in self.sampleIds):
+        if ('NCBI_Taxonomy_ID' not in self.sampleIds):
             self.logger.error('NCBI_Taxonomy_ID need to be placed before the '
                               'sample ID columns of the file and in exact case.',
-                              extra={'line_number': self.line_number})
-            num_errors += 1
-        elif not ('NCBI_Taxonomy_ID' in self.nonsample_cols or
-                  'ncbi_taxonomy_id' in self.nonsample_cols):
-            self.logger.error('The col NCBI_Taxonomy_ID  '
-                              ' needs to be present in exact case.',
                               extra={'line_number': self.line_number})
             num_errors += 1
         return num_errors
@@ -1108,7 +1101,6 @@ class MicrobeAbundanceValidator(FeaturewiseFileValidator):
     def parseFeatureColumns(self, nonsample_col_vals):
         """Nothing to check for non smaple columns."""
         return None
-    
 
 class MRAContinuousValuesValidator(MicrobeAbundanceValidator, ContinuousValuesValidator):
     """Logic to validate continuous CNA data."""
@@ -1117,8 +1109,8 @@ class CellAbundanceValidator(FeaturewiseFileValidator):
 
     """FeatureWiseValidator that has gene symbol and/or Entrez gene id as feature columns."""
 
-    REQUIRED_HEADERS = ['Cell_Entity_ID']
-    OPTIONAL_HEADERS = ['Cellpedia_Cell_Type_Name']
+    REQUIRED_HEADERS = ['Unique_Cell_ID']
+    OPTIONAL_HEADERS = ['Unique_Cell_Name']
     ALLOW_BLANKS = True
     NULL_VALUES = ["NA"]
 
@@ -1130,16 +1122,9 @@ class CellAbundanceValidator(FeaturewiseFileValidator):
         num_errors = super(GenewiseFileValidator, self).checkHeader(cols)
         # see if at least one of the gene identifiers is in the right place
 
-        if ('Cell_Entity_ID' in self.sampleIds or
-                  'cell_entity_id' in self.sampleIds):
-            self.logger.error('Cell_Entity_ID needs to be placed before the '
+        if ('Unique_Cell_ID' not in self.sampleIds):
+            self.logger.error('Unique_Cell_ID needs to be placed before the '
                               'sample ID columns of the file and in exact case.',
-                              extra={'line_number': self.line_number})
-            num_errors += 1
-        elif not ('Cell_Entity_ID' in self.nonsample_cols or
-                  'cell_entity_id' in self.nonsample_cols):
-            self.logger.error('Col Cell_Entity_ID '
-                              ' needs to be present and in exact case.',
                               extra={'line_number': self.line_number})
             num_errors += 1
         return num_errors
