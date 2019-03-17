@@ -982,7 +982,6 @@ class ContinuousValuesTestCase(PostClinicalDataFileTestCase):
         record = next(record_iterator)
         self.assertEqual(record.cause, 'Na')
 
-
 class MutationsSpecialCasesTestCase(PostClinicalDataFileTestCase):
 
     def test_normal_samples_list_in_maf(self):

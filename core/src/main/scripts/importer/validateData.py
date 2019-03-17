@@ -1074,6 +1074,7 @@ class CNAContinuousValuesValidator(CNAValidator, ContinuousValuesValidator):
     """Logic to validate continuous CNA data."""
  
 ###### BEGIN HACK
+
 class MicrobeAbundanceValidator(FeaturewiseFileValidator):
 
     """FeatureWiseValidator that has  id as feature columns."""
@@ -1135,6 +1136,8 @@ class CellAbundanceValidator(FeaturewiseFileValidator):
     
 class CRAContinuousValuesValidator(CellAbundanceValidator, ContinuousValuesValidator):
     """Logic to validate continuous CNA data."""
+
+### these cases were tested by unit_tests_validate_data.py | ContinuousValuesTestCase
     
 ###### END
 
