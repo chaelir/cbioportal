@@ -1,0 +1,411 @@
+/* LICENSE_TBD */
+
+package org.mskcc.cbio.portal.dao;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.mskcc.cbio.portal.model.CanonicalCell;
+import org.mskcc.cbio.portal.util.ProgressMonitor;
+
+/**
+ * A Utility Class that speeds access to Cell Info.
+ *
+ * @author Ethan Cerami
+ */
+public class DaoCellOptimized {
+    private static final String CBIO_CANCER_CELLS_FILE = "/cbio_cancer_cells.txt";
+    private static final String CELL_SYMBOL_DISAMBIGUATION_FILE = "/cell_symbol_disambiguation.txt";
+        
+    private static final DaoCellOptimized daoCellOptimized = new DaoCellOptimized();
+    //nb: make sure any map is also cleared in clearCache() method below:
+    private final HashMap<Integer, CanonicalCell> cellEntityMap = new HashMap<Integer, CanonicalCell>();
+    private final HashMap<String, CanonicalCell> cellSymbolMap = new HashMap <String, CanonicalCell>();
+    private final HashMap<Long, CanonicalCell> inputCellTypeIdMap = new HashMap <Long, CanonicalCell>();
+    private final HashMap<String, List<CanonicalCell>> cellAliasMap = new HashMap<String, List<CanonicalCell>>();
+    private final Set<CanonicalCell> cbioCancerCells = new HashSet<CanonicalCell>();
+    private final Map<String, CanonicalCell> disambiguousCells = new HashMap<String, CanonicalCell>();
+    
+    /**
+     * Private Constructor, to enforce singleton pattern.
+     * 
+     * @throws DaoException Database Error.
+     */
+    private DaoCellOptimized () {
+        fillCache();
+    }
+    
+    private synchronized void fillCache() {
+        try {
+            //  Automatically populate hashmap upon init
+            ArrayList<CanonicalCell> globalCellList = DaoCell.getAllCells();
+            for (CanonicalCell currentCell:  globalCellList) {
+                cacheCell(currentCell);
+            }
+        } catch (DaoException e) {
+            e.printStackTrace();
+        }
+        
+        try {
+            if (cellSymbolMap.size()>10000) { 
+                // only for deployed version; not for unit test and importing
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(getClass().getResourceAsStream(CBIO_CANCER_CELLS_FILE)));
+                for (String line=in.readLine(); line!=null; line=in.readLine()) {
+                    String[] parts = line.trim().split("\t",-1);
+                    CanonicalCell cell = null;
+                    if (parts.length>1) {
+                        cell = getCell(Long.parseLong(parts[1]));
+                    } else {
+                        cell = getCell(parts[0]);
+                    }
+                    if (cell!=null) {
+                        cbioCancerCells.add(cell);
+                    } else {
+                    	ProgressMonitor.logWarning(line+" in the cbio cancer cell list config file [resources" + CBIO_CANCER_CELLS_FILE + 
+                        		"] is not a cell symbol. You should either update this file or update the `IM_cell` and `IM_cell_alias` tables to fix this.");
+                    }
+                }
+                in.close();
+            }
+            {
+                BufferedReader in = new BufferedReader(
+                        new InputStreamReader(getClass().getResourceAsStream(CELL_SYMBOL_DISAMBIGUATION_FILE)));
+                for (String line=in.readLine(); line!=null; line=in.readLine()) {
+                    if (line.startsWith("#")) {
+                        continue;
+                    }
+                    String[] parts = line.trim().split("\t",-1);
+                    CanonicalCell cell = getCell(Long.parseLong(parts[1]));
+                    if (cell==null) {
+                    	ProgressMonitor.logWarning(line+" in config file [resources" + CELL_SYMBOL_DISAMBIGUATION_FILE + 
+                        		"]is not valid. You should either update this file or update the `IM_cell` and `IM_cell_alias` tables to fix this.");
+                    }
+                    disambiguousCells.put(parts[0], cell);
+                }
+                in.close();
+            }
+        } catch(IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void clearCache()
+    {
+        cellSymbolMap.clear();
+        inputCellTypeIdMap.clear();
+        cellEntityMap.clear();
+        cellAliasMap.clear();
+        cbioCancerCells.clear();
+        disambiguousCells.clear();
+    }
+
+    /**
+     * Clear and fill cache again. Useful for unit tests and 
+     * for the Import procedure to update the cells table, clearing the
+     * cache without the need to restart the webserver.
+     */
+    public synchronized void reCache()
+    {
+        clearCache();
+        fillCache();
+    }
+    
+    /**
+     * Adds a new Cell Record to the Database. If the Entrez Cell ID is negative,
+     * a fake Entrez Cell ID will be assigned.
+     * @param cell  Canonical Cell Object.
+     * @return number of records successfully added.
+     * @throws DaoException Database Error.
+     */
+    public int addCell(CanonicalCell cell) throws DaoException {
+        int ret;
+        if (cell.getCellEntityId()>0) {
+            ret = DaoCell.addOrUpdateCell(cell);
+        } else {
+            ret = DaoCell.addCellWithoutCellEntityId(cell);
+        }
+        //only overwrite cache if ..?
+        cacheCell(cell);
+        return ret;
+    }
+    
+    /**
+     * Update Cell Record in the Database. It will also replace this 
+     * cell's aliases with the ones found in the given cell object.
+     */
+    public int updateCell(CanonicalCell cell)  throws DaoException {
+        int ret = DaoCell.updateCell(cell);
+        //recache:
+        cacheCell(cell);
+        return ret;
+    }
+    
+    public void deleteCell(CanonicalCell cell) throws DaoException {
+        DaoCell.deleteCell(cell.getCellEntityId());
+        cellSymbolMap.remove(cell.getInputCellTypeNameAllCaps());
+        for (String alias : cell.getAliases()) {
+            String aliasUp = alias.toUpperCase();
+            List<CanonicalCell> cells = cellAliasMap.get(aliasUp);
+            cells.remove(cell);
+            if (cells.isEmpty()) {
+                cellAliasMap.remove(aliasUp);
+            }
+        }
+    }
+    
+    private void cacheCell(CanonicalCell cell) {
+        cellEntityMap.put(cell.getCellEntityId(), cell);
+        cellSymbolMap.put(cell.getInputCellTypeNameAllCaps(), cell);
+        inputCellTypeIdMap.put(cell.getCellEntityId(), cell);
+        for (String alias : cell.getAliases()) {
+            String aliasUp = alias.toUpperCase();
+            List<CanonicalCell> cells = cellAliasMap.get(aliasUp);
+            if (cells==null) {
+                cells = new ArrayList<CanonicalCell>();
+                cellAliasMap.put(aliasUp, cells);
+            }
+            cells.add(cell);
+        }
+    }
+
+    /**
+     * Gets Global Singleton Instance.
+     *
+     * @return DaoCellOptimized Singleton.
+     * @throws DaoException Database Error.
+     */
+    public static DaoCellOptimized getInstance() {
+        return daoCellOptimized;
+    }
+    
+    /**
+     * Return cellEntityId from cache for given cellEntityId
+     * 
+     * @param cellEntityId
+     * @return
+     */
+    public static int getCellEntityId(long inputCellTypeId) {
+    	//get entity id from cache:
+    	CanonicalCell cell = daoCellOptimized.getCell(inputCellTypeId);
+		  if (cell != null) {
+			  return cell.getCellEntityId();
+		  }
+		  else {
+			  throw new RuntimeException("Invalid cellEntityId symbol. Not found in cache: " + cellEntityId);
+		  }    			
+    }
+    
+    /**
+     * Return cellEntityId from cache for given cellEntityId
+     * 
+     * @param cellEntityId
+     * @return
+     */
+    public static long getInputCellTypeId(int cellEntityId) {
+    	//get entity id from cache:
+    	CanonicalCell cell = daoCellOptimized.getCellByEntityId(cellEntityId);
+		  //since not every cell entity will be a cell, this could be null (but would
+    	//be a programming error elsewhere, so throw exception):
+    	if (cell == null) {
+    		throw new RuntimeException("Cell entity was not found in cell cache: " + cellEntityId);
+    	}
+    		
+    	return daoCellOptimized.getCellByEntityId(cellEntityId).getInputCellTypeId();
+    }
+
+    /**
+     * Gets a Cell by Input Cell Name (what if non-unique? must make it unique!).
+     *
+     * @param inputCellTypeName input Cell Symbol.
+     * @return Canonical Cell Object.
+     */
+    public CanonicalCell getCell(String inputCellTypeName) {
+        return cellSymbolMap.get(inputCellTypeName.toUpperCase());
+    }
+
+    /**
+     * Looks for a Cell where Cell Symbol or an alias matches the given symbol. 
+     * 
+     * @param cellSymbol: HUGO Cell Symbol or an alias
+     * @param searchInAliases: set to true if this method should search for a match in this.cellAliasMap 
+     * in case a matching hugo symbol cannot be found in this.cellSymbolMap
+     * 
+     * @return
+     */
+    public List<CanonicalCell> getCell(String cellSymbol, boolean searchInAliases) {
+    	CanonicalCell cell = getCell(cellSymbol);
+    	if (cell!=null) {
+            return Collections.singletonList(cell);
+        }
+        
+    	if (searchInAliases) {
+	        List<CanonicalCell> cells = cellAliasMap.get(cellSymbol.toUpperCase());
+	        if (cells!=null) {
+	        	return Collections.unmodifiableList(cells);
+	        }
+        }
+        
+        return Collections.emptyList();
+    }
+    
+    /**
+     * Gets Cell By Input Cell Type ID.
+     *
+     * @param Input Cell Type ID.
+     * @return Canonical Cell Object.
+     */
+    public CanonicalCell getCell(long inputCellTypeId) {
+        return inputCellTypeIdMap.get(inputCellTypeId);
+    }
+    
+    /**
+     * Gets Cell By Cell Entity ID.
+     *
+     * @param Cell Entity ID.
+     * @return Canonical Cell Object.
+     */
+    public CanonicalCell getCellByEntityId(int cellEntityId) {
+        return cellEntityMap.get(cellEntityId);
+    }
+    
+    /**
+     * Look for cells with a specific ID. First look for cells with the specific
+     * Entrez Cell ID, if found return this cell; then for HUGO symbol, if found,
+     * return this cell; and lastly for aliases, if found, return a list of
+     * matched cells (could be more than one). If nothing matches, return an 
+     * empty list.
+     * @param cellId an Entrez Cell ID or HUGO symbol or cell alias
+     * @return A list of cells that match, an empty list if no match.
+     */
+    public List<CanonicalCell> guessCell(String cellId) {
+        return guessCell(cellId, null);
+    }
+    
+    /**
+     * Look for cells with a specific ID on a chr. First look for cells with the specific
+     * Entrez Cell ID, if found return this cell; then for HUGO symbol, if found,
+     * return this cell; and lastly for aliases, if found, return a list of
+     * matched cells (could be more than one). If chr is not null, use that to match too.
+     * If nothing matches, return an empty list.
+     * @param cellId an Entrez Cell ID or HUGO symbol or cell alias
+     * @param chr chromosome
+     * @return A list of cells that match, an empty list if no match.
+     */
+    public List<CanonicalCell> guessCell(String cellId) {
+        if (cellId==null) {
+            return Collections.emptyList();
+        }
+        
+        CanonicalCell cell;
+        if (cellId.matches("[0-9]+")) { // likely to be a input cell type id
+            cell = getCell(Integer.parseInt(cellId));
+            if (cell!=null) {
+                return Collections.singletonList(cell);
+            }
+        }
+        
+        cell = getCell(cellId); // cell symbol
+        if (cell!=null) {
+            return Collections.singletonList(cell);
+        }
+        
+        List<CanonicalCell> cells = cellAliasMap.get(cellId.toUpperCase());
+        if (cells!=null) {
+            return Collections.unmodifiableList(cells);
+        }
+
+        return Collections.emptyList();
+    }
+    
+    /**
+     * Look for cell that can be non-ambiguously determined.
+     * @param cellId an Entrez Cell ID or HUGO symbol or cell alias
+     * @return a cell that can be non-ambiguously determined, or null if cannot.
+     */
+    public CanonicalCell getNonAmbiguousCell(String cellId) {
+        return getNonAmbiguousCell(cellId, null);
+    }
+    
+    /**
+     * Look for cell that can be non-ambiguously determined
+     * @param cellId an Entrez Cell ID or HUGO symbol or cell alias
+     * @param issueWarning if true and cell is not ambiguous, 
+     * print all the Entrez Ids corresponding to the cellId provided
+     * @return a cell that can be non-ambiguously determined, or null if cannot.
+     */
+    public CanonicalCell getNonAmbiguousCell(String cellId, boolean issueWarning) {
+        List<CanonicalCell> cells = guessCell(cellId);
+        if (cells.isEmpty()) {
+            return null;
+        }
+        
+        if (cells.size()==1) {
+            return cells.get(0);
+        }
+        
+        if (disambiguousCells.containsKey(cellId)) {
+            return disambiguousCells.get(cellId);
+        }
+
+        if (issueWarning) {
+	        StringBuilder sb = new StringBuilder("Ambiguous alias ");
+	        sb.append(cellId);
+	        sb.append(": corresponding entrez ids of ");
+	        for (CanonicalCell cell : cells) {
+	            sb.append(cell.getCellEntityId());
+	            sb.append(",");
+	        }
+	        sb.deleteCharAt(sb.length()-1);
+	        
+	        ProgressMonitor.logWarning(sb.toString());
+        }
+        return null;
+        
+    }
+    
+    public Set<Long> getCellEntityIds(Collection<CanonicalCell> cells) {
+        Set<Long> cellEntityIds = new HashSet<Long>();
+        for (CanonicalCell cell : cells) {
+            cellEntityIds.add(cell.getCellEntityId());
+        }
+        return cellEntityIds;
+    }
+    
+    public Set<CanonicalCell> getCbioCancerCells() {
+        return Collections.unmodifiableSet(cbioCancerCells);
+    }
+    
+    public boolean isCbioCancerCell(CanonicalCell cell) {
+        return cbioCancerCells.contains(cell);
+    }
+
+    /**
+     * Gets an ArrayList of All Cells.
+     * @return Array List of All Cells.
+     */
+    public ArrayList<CanonicalCell> getAllCells () {
+        return new ArrayList<CanonicalCell>(inputCellTypeIdMap.values());
+    }
+
+    /**
+     * Deletes all Cell Records in the Database.
+     * @throws DaoException Database Error.
+     * 
+     * @deprecated  only used by deprecated code, so deprecating this as well.
+     */
+    public void deleteAllRecords() throws DaoException {
+        DaoCell.deleteAllRecords();
+    }
+
+}

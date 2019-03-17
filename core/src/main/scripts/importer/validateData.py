@@ -91,7 +91,11 @@ VALIDATOR_IDS = {
     cbioportal_common.MetaFileTypes.MUTATION_SIGNIFICANCE:'MutationSignificanceValidator',
     cbioportal_common.MetaFileTypes.GENE_PANEL_MATRIX:'GenePanelMatrixValidator',
     cbioportal_common.MetaFileTypes.GSVA_SCORES:'GsvaScoreValidator',
-    cbioportal_common.MetaFileTypes.GSVA_PVALUES:'GsvaPvalueValidator'
+    cbioportal_common.MetaFileTypes.GSVA_PVALUES:'GsvaPvalueValidator',
+    ###### BEGIN HACK
+    cbioportal_common.MetaFileTypes.CRA_CONTINUOUS:'CRAContinuousValuesValidator',
+    cbioportal_common.MetaFileTypes.MRA_CONTINUOUS:'MRAContinuousValuesValidator',
+    ###### END
 }
 
 
@@ -1068,6 +1072,86 @@ class CNADiscreteValidator(CNAValidator):
 
 class CNAContinuousValuesValidator(CNAValidator, ContinuousValuesValidator):
     """Logic to validate continuous CNA data."""
+ 
+###### BEGIN HACK
+class MicrobeAbundanceValidator(FeaturewiseFileValidator):
+
+    """FeatureWiseValidator that has  id as feature columns."""
+
+    REQUIRED_HEADERS = ['NCBI_Taxonomy_ID']
+    OPTIONAL_HEADERS = []
+    ALLOW_BLANKS = True
+    NULL_VALUES = ["NA"]
+
+    def checkHeader(self, cols):
+        """Validate the header and read sample IDs from it.
+
+        Return the number of fatal errors.
+        """
+        num_errors = super(GenewiseFileValidator, self).checkHeader(cols)
+        # see if at least one of the gene identifiers is in the right place
+
+        if ('NCBI_Taxonomy_ID' in self.sampleIds or
+                  'ncbi_taxonomy_id' in self.sampleIds):
+            self.logger.error('NCBI_Taxonomy_ID need to be placed before the '
+                              'sample ID columns of the file and in exact case.',
+                              extra={'line_number': self.line_number})
+            num_errors += 1
+        elif not ('NCBI_Taxonomy_ID' in self.nonsample_cols or
+                  'ncbi_taxonomy_id' in self.nonsample_cols):
+            self.logger.error('The col NCBI_Taxonomy_ID  '
+                              ' needs to be present in exact case.',
+                              extra={'line_number': self.line_number})
+            num_errors += 1
+        return num_errors
+        
+    def parseFeatureColumns(self, nonsample_col_vals):
+        """Nothing to check for non smaple columns."""
+        return None
+    
+
+class MRAContinuousValuesValidator(MicrobeAbundanceValidator, ContinuousValuesValidator):
+    """Logic to validate continuous CNA data."""
+
+class CellAbundanceValidator(FeaturewiseFileValidator):
+
+    """FeatureWiseValidator that has gene symbol and/or Entrez gene id as feature columns."""
+
+    REQUIRED_HEADERS = ['Cell_Entity_ID']
+    OPTIONAL_HEADERS = ['Cellpedia_Cell_Type_Name']
+    ALLOW_BLANKS = True
+    NULL_VALUES = ["NA"]
+
+    def checkHeader(self, cols):
+        """Validate the header and read sample IDs from it.
+
+        Return the number of fatal errors.
+        """
+        num_errors = super(GenewiseFileValidator, self).checkHeader(cols)
+        # see if at least one of the gene identifiers is in the right place
+
+        if ('Cell_Entity_ID' in self.sampleIds or
+                  'cell_entity_id' in self.sampleIds):
+            self.logger.error('Cell_Entity_ID needs to be placed before the '
+                              'sample ID columns of the file and in exact case.',
+                              extra={'line_number': self.line_number})
+            num_errors += 1
+        elif not ('Cell_Entity_ID' in self.nonsample_cols or
+                  'cell_entity_id' in self.nonsample_cols):
+            self.logger.error('Col Cell_Entity_ID '
+                              ' needs to be present and in exact case.',
+                              extra={'line_number': self.line_number})
+            num_errors += 1
+        return num_errors
+        
+    def parseFeatureColumns(self, nonsample_col_vals):
+        """Nothing to check for non smaple columns."""
+        return None
+    
+class CRAContinuousValuesValidator(CellAbundanceValidator, ContinuousValuesValidator):
+    """Logic to validate continuous CNA data."""
+    
+###### END
 
 
 class MutationsExtendedValidator(Validator):
@@ -3919,6 +4003,8 @@ def validate_study(study_dir, portal_instance, logger, relaxed_mode, strict_maf_
      defined_case_list_fns,
      study_cancer_type,
      study_id) = process_metadata_files(study_dir, portal_instance, logger, relaxed_mode, strict_maf_checks)
+    ### process_metadata_files(study_dir, portal_instance, logger, relaxed_mode, strict_maf_checks) ###
+
 
     # first parse and validate cancer type files
     studydefined_cancer_types = []
@@ -4148,6 +4234,7 @@ def main_validate(args):
         portal_instance.load_genome_info(args.portal_properties)
 
     validate_study(study_dir, portal_instance, logger, relaxed_mode, strict_maf_checks)
+    ### validate_study(study_dir, portal_instance, logger, relaxed_mode, strict_maf_checks) ###
 
     if html_handler is not None:
         collapsing_html_handler.flush()

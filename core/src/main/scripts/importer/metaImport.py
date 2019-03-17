@@ -118,6 +118,7 @@ if __name__ == '__main__':
     print("Starting validation...\n", file=sys.stderr)
     try:
         exitcode = validateData.main_validate(args)
+        ### validateData.main_validate(args) ### in validateData: check data
     except KeyboardInterrupt:
         print(Color.BOLD + "\nProcess interrupted. " + Color.END, file=sys.stderr)
         print("#" * 71 + "\n", file=sys.stderr)
@@ -145,6 +146,7 @@ if __name__ == '__main__':
                 print(Color.BOLD + "Overriding Warnings. Importing study now" + Color.END, file=sys.stderr)
                 print("#" * 71 + "\n", file=sys.stderr)
                 cbioportalImporter.main(args)
+                ### cbioportalImporter.main(args) ### in cbioportalImporter: import with overriding
                 exitcode = 0
             else:
                 print(Color.BOLD + "Warnings. Please fix your files or import with override warning option" + Color.END, file=sys.stderr)
@@ -153,6 +155,7 @@ if __name__ == '__main__':
             print(Color.BOLD + "Everything looks good. Importing study now" + Color.END, file=sys.stderr)
             print("#" * 71 + "\n", file=sys.stderr)
             cbioportalImporter.main(args)
+            ### cbioportalImporter.main(args) ### in cbioportalImporter: import without overriding
     except KeyboardInterrupt:
         print(Color.BOLD + "\nProcess interrupted. You will have to run this again to make sure study is completely loaded." + Color.END, file=sys.stderr)
         print("#" * 71, file=sys.stderr)
