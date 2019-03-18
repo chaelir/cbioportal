@@ -301,8 +301,8 @@ IMPORTER_CLASSNAME_BY_META_TYPE = {
     MetaFileTypes.GSVA_PVALUES: "org.mskcc.cbio.portal.scripts.ImportProfileData",
     ###### BEGIN OF HACK
     ###### add in microbe and cell relative abundance meta data type 
-    MetaFileTypes.MRA_CONTINUOUS: "org.mskcc.cbio.portal.scripts.ImportProfileData",
-    MetaFileTypes.CRA_CONTINUOUS: "org.mskcc.cbio.portal.scripts.ImportProfileData",
+    MetaFileTypes.MRA_CONTINUOUS: "org.mskcc.cbio.portal.scripts.ImportMicrobeProfileData",
+    MetaFileTypes.CRA_CONTINUOUS: "org.mskcc.cbio.portal.scripts.ImportCellProfileData",
     ###### END
 }
 

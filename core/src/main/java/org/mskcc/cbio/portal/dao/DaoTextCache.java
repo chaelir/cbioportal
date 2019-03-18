@@ -174,7 +174,12 @@ public class DaoTextCache
             
             // create date_time_stamp string using the given date
             // (java.sql package does not have a proper "datetime" type support)
-            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+            
+            /* BEGIN HACK */
+            // SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            //System.out.println (formatter.toString());
+            /* END */
             
             pstmt.setString(1, formatter.format(date));
             pstmt.executeUpdate();

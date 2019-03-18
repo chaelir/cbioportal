@@ -3,6 +3,7 @@
 package org.mskcc.cbio.portal.scripts;
 
 import java.io.*;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Set;
@@ -31,7 +32,7 @@ public class ImportCellProfileData extends ConsoleRunnable {
             CellProfile cellProfile = null;
             String cellPanel = null;
             try {
-                cellProfile = CellProfileReader.loadCellProfile( descriptorFile );
+                cellProfile = CellProfileReader.loadCellProfile( descriptorFile ); //FIX
                 //cellPanel = CellProfileReader.loadCellPanelInformation( descriptorFile );
             } catch (java.io.FileNotFoundException e) {
                 throw new java.io.FileNotFoundException("Descriptor file '" + descriptorFile + "' not found.");

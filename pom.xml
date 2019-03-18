@@ -26,6 +26,143 @@
 
   <profiles>
     <profile>
+      <id>charlie</id>
+      <activation>
+          <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+          <importer-main-class>org.mskcc.cbio.importer.Admin</importer-main-class>
+      </properties>
+      <build>
+          <plugins>
+              <plugin>
+                  <groupId>org.jacoco</groupId>
+                  <artifactId>jacoco-maven-plugin</artifactId>
+                  <version>${jacoco-maven-plugin.version}</version>
+                  <executions>
+                      <!--
+                          Prepares the property pointing to the JaCoCo runtime agent which
+                          is passed as VM argument when Maven the Surefire plugin is executed.
+                      -->
+                      <execution>
+                          <id>pre-unit-test</id>
+                          <phase>process-test-classes</phase>
+                          <goals>
+                              <goal>prepare-agent</goal>
+                          </goals>
+                          <configuration>
+                              <!-- Sets the path to the file which contains the execution data. -->
+                              <destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
+                              <!--
+                                  Sets the name of the property containing the settings
+                                  for JaCoCo runtime agent.
+                              -->
+                              <propertyName>argLine</propertyName>
+                          </configuration>
+                      </execution>
+                      <!--
+                          Ensures that the code coverage report for unit tests is created after
+                          unit tests have been run.
+                      -->
+                      <execution>
+                          <id>post-unit-test</id>
+                          <phase>test</phase>
+                          <goals>
+                              <goal>report</goal>
+                          </goals>
+                          <configuration>
+                              <!-- Sets the path to the file which contains the execution data. -->
+                              <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
+                              <!-- Sets the output directory for the code coverage report. -->
+                              <outputDirectory>${project.build.directory}/coverage-reports/jacoco-ut</outputDirectory>
+                          </configuration>
+                      </execution>
+                  </executions>
+              </plugin>
+              <!-- copy portal.properties.EXAMPLE and log4j.properties.EXAMPLE if they don't exist -->
+              <plugin>
+                  <artifactId>maven-antrun-plugin</artifactId>
+                  <version>1.8</version>
+                  <!-- only needs to be executed for parent pom -->
+                  <inherited>false</inherited>
+                  <executions>
+                      <execution>
+                          <phase>validate</phase>
+                          <goals>
+                              <goal>run</goal>
+                          </goals>
+                          <configuration>
+                              <target>
+                                  <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="maven.dependency.classpath" />
+                                  <if>
+                                      <not>
+                                          <available file="${basedir}/src/main/resources/portal.properties" />
+                                      </not>
+                                      <then>
+                                          <copy file="${basedir}/src/main/resources/portal.properties.EXAMPLE" tofile="${basedir}/src/main/resources/portal.properties" />
+                                      </then>
+                                  </if>
+                                  <if>
+                                      <not>
+                                          <available file="${basedir}/src/main/resources/log4j.properties" />
+                                      </not>
+                                      <then>
+                                          <copy file="${basedir}/src/main/resources/log4j.properties.EXAMPLE" tofile="${basedir}/src/main/resources/log4j.properties" />
+                                      </then>
+                                  </if>
+                              </target>
+                          </configuration>
+                      </execution>
+                  </executions>
+                  <dependencies>
+                      <dependency>
+                          <groupId>ant-contrib</groupId>
+                          <artifactId>ant-contrib</artifactId>
+                          <version>1.0b3</version>
+                          <exclusions>
+                              <exclusion>
+                                  <groupId>ant</groupId>
+                                  <artifactId>ant</artifactId>
+                              </exclusion>
+                          </exclusions>
+                      </dependency>
+                      <dependency>
+                          <groupId>org.apache.ant</groupId>
+                          <artifactId>ant-nodeps</artifactId>
+                          <version>1.8.1</version>
+                      </dependency>
+                  </dependencies>
+              </plugin>
+              <plugin>
+                  <groupId>pl.project13.maven</groupId>
+                  <artifactId>git-commit-id-plugin</artifactId>
+                  <version>2.2.4</version>
+                  <executions>
+                      <execution>
+                          <id>get-the-git-infos</id>
+                          <goals>
+                              <goal>revision</goal>
+                          </goals>
+                          <!-- *NOTE*: The default phase of revision is initialize, but in case you want to change it, you can do so by adding the phase here -->
+                          <phase>initialize</phase>
+                      </execution>
+                      <execution>
+                          <id>validate-the-git-infos</id>
+                          <goals>
+                              <goal>validateRevision</goal>
+                          </goals>
+                          <!-- *NOTE*: The default phase of validateRevision is verify, but in case you want to change it, you can do so by adding the phase here -->
+                          <phase>package</phase>
+                      </execution>
+                  </executions>
+                  <configuration>
+                      <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                  </configuration>
+              </plugin>
+          </plugins>
+      </build>
+    </profile>  
+    <profile>
       <id>public</id>
       <activation>
         <activeByDefault>true</activeByDefault>
@@ -264,18 +401,19 @@
   </properties>
 
   <modules>
-    <module>portal</module>
-    <!--   
-    <module>web</module>
-    <module>service</module>
-    -->
-    <module>core</module>
-    <module>business</module>
-    <module>model</module>
-    <module>persistence</module>
-    <module>scripts</module>
     <module>db-scripts</module>
+    <module>persistence</module>
+    <module>service</module>
+    <module>model</module>
+    <module>business</module>
+    <module>web</module>
     <module>security</module>
+    <!-- above modcules self suffice -->  
+    <module>core</module>
+    <!--   
+      <module>portal</module>
+      <module>scripts</module>
+    -->
   </modules>
 
   <dependencies>
