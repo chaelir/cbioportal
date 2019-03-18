@@ -38,6 +38,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 import org.mskcc.cbio.portal.util.CacheUtil;
 
@@ -73,7 +74,12 @@ public class DaoTextCache
 			con = JdbcUtil.getDbConnection(DaoTextCache.class);
 			pstmt = con.prepareStatement(
 					"INSERT INTO text_cache (`HASH_KEY`, `TEXT`, `DATE_TIME_STAMP`) "
-			        		+ "VALUES (?,?,NOW())");
+                        + "VALUES (?,?, NOW())");
+            //BEGIN HACK, force UTC timezone            
+            //  Here, assumes Mysql is configured such that NOW() returns UTC
+            //  Otherwise, consider the following:
+			//        		+ "VALUES (?,?, CONVERT(NOW(), mysql_tz, 'UTC'))");
+            //END HACK
 			pstmt.setString(1, key);
 			pstmt.setString(2, text);
 			
@@ -174,14 +180,17 @@ public class DaoTextCache
             
             // create date_time_stamp string using the given date
             // (java.sql package does not have a proper "datetime" type support)
-            
+
             /* BEGIN HACK */
             // SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMddHHmmss");
+            // Need to set the time zone of formatter as well
             SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-            //System.out.println (formatter.toString());
-            /* END */
+            formatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+            //System.err.println(formatter.format(date));
             
-            pstmt.setString(1, formatter.format(date));
+            pstmt.setString(1, formatter.format(date) );
+            //System.err.println(pstmt);
+            /* END */
             pstmt.executeUpdate();
         }
         catch (SQLException e)

@@ -33,6 +33,7 @@
 package org.mskcc.cbio.portal.dao;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -76,7 +77,10 @@ public class TestDaoTextCache
         assertEquals(text2, daoTextCache.getText(key2));
 
         // delete anything older than current time
-        daoTextCache.purgeOldKeys(Calendar.getInstance().getTime());
+        //BEGIN HACK - force UTC time
+        daoTextCache.purgeOldKeys(Calendar.getInstance(TimeZone.getTimeZone("UTC")).getTime());
+        //daoTextCache.purgeOldKeys(Calendar.getInstance().getTime());
+        //END
         
         // assert that both keys are deleted
         assertEquals(null, daoTextCache.getText(key1));
