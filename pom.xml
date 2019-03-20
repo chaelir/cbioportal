@@ -10,7 +10,7 @@
   <description>master maven module</description>
 
   <scm>
-    <developerConnection>scm:git:https://github.com/cBioPortal/cbioportal.git</developerConnection>
+    <developerConnection>scm:git:https://github.com/chaelir/cbioportal.git</developerConnection>
   </scm>
 
   <repositories>
@@ -162,6 +162,7 @@
           </plugins>
       </build>
     </profile>  
+    <!-- above charlie profile based on the public profile below -->
     <profile>
       <id>public</id>
       <activation>
@@ -308,7 +309,6 @@
     </profile>
     <profile>
       <id>heroku</id>
-
       <build>
         <plugins>
           <!-- copy files in heroku/ to root-->
@@ -410,10 +410,8 @@
     <module>security</module>
     <!-- above modcules self suffice -->  
     <module>core</module>
-    <!--   
-      <module>portal</module>
-      <module>scripts</module>
-    -->
+    <module>portal</module>
+    <module>scripts</module>
   </modules>
 
   <dependencies>
