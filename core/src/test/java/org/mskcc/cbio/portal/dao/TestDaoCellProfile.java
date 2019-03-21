@@ -68,35 +68,30 @@ public class TestDaoCellProfile {
 	public void testDaoGetAllCellProfiles() throws DaoException {
 
 		ArrayList<CellProfile> list = DaoCellProfile.getAllCellProfiles(studyId);
-		assertEquals(6, list.size());
+		assertEquals(1, list.size());
 	}
 		
 	@Test
 	public void testDaoCheckCellProfiles() throws DaoException {
 
 		ArrayList<CellProfile> list = DaoCellProfile.getAllCellProfiles(studyId);
-		CellProfile cellProfile = list.get(0);
+		CellProfile cellProfile = list.get(0); //first entry
 		assertEquals(studyId, cellProfile.getCancerStudyId());
-		assertEquals("Putative copy-number alterations from GISTIC", cellProfile.getProfileName());
-		assertEquals(CellAlterationType.COPY_NUMBER_ALTERATION, cellProfile.getCellAlterationType());
-		assertEquals("Putative copy-number from GISTIC 2.0. Values: -2 = homozygous deletion; -1 = hemizygous deletion; 0 = neutral / no change; 1 = gain; 2 = high level amplification.", 
+		assertEquals("Relative immune cell abundance values from CiberSort", cellProfile.getProfileName());
+		assertEquals(CellAlterationType.CELL_RELATIVE_ABUNDANCE, cellProfile.getCellAlterationType());
+		assertEquals("Relative linear relative abundance values (0 to 1) for each cell type", 
 				cellProfile.getProfileDescription());
 
-		cellProfile = list.get(1);
-		assertEquals(studyId, cellProfile.getCancerStudyId());
-		assertEquals("mRNA expression (microarray)", cellProfile.getProfileName());
-		assertEquals(CellAlterationType.MRNA_EXPRESSION, cellProfile.getCellAlterationType());
-		assertEquals(false, cellProfile.showProfileInAnalysisTab());
 	}
-	
-	@Test
+
+    @Test
 	public void testDaoCreateCellProfile() throws DaoException {
 
 		CellProfile cellProfile = new CellProfile();
 		cellProfile.setCancerStudyId(studyId);
 		cellProfile.setProfileName("test profile");
 		cellProfile.setStableId("test");
-		cellProfile.setCellAlterationType(CellAlterationType.FUSION);
+		cellProfile.setCellAlterationType(CellAlterationType.CELL_RELATIVE_ABUNDANCE);
 		cellProfile.setDatatype("test");
 		DaoCellProfile.addCellProfile(cellProfile);
 		
@@ -104,58 +99,52 @@ public class TestDaoCellProfile {
 		assertEquals(studyId, readCellProfile.getCancerStudyId());
 		assertEquals("test", readCellProfile.getStableId());
 		assertEquals("test profile", readCellProfile.getProfileName());
-		assertEquals(CellAlterationType.FUSION, readCellProfile.getCellAlterationType());
+		assertEquals(CellAlterationType.CELL_RELATIVE_ABUNDANCE, readCellProfile.getCellAlterationType());
 	}
 
 	@Test
 	public void testDaoGetCellProfileByStableId() throws DaoException {
 
-		CellProfile cellProfile = DaoCellProfile.getCellProfileByStableId("study_tcga_pub_gistic");
+		CellProfile cellProfile = DaoCellProfile.getCellProfileByStableId("linear_CRA");
 		assertEquals(studyId, cellProfile.getCancerStudyId());
-		assertEquals("Putative copy-number alterations from GISTIC", cellProfile.getProfileName());
-		assertEquals(CellAlterationType.COPY_NUMBER_ALTERATION, cellProfile.getCellAlterationType());
+		assertEquals("Relative immune cell abundance values from CiberSort", cellProfile.getProfileName());
+		assertEquals(CellAlterationType.CELL_RELATIVE_ABUNDANCE, cellProfile.getCellAlterationType());
 	}
 	
 	@Test
 	public void testDaoGetCellProfileByInternalId() throws DaoException {
 
-		CellProfile cellProfile = DaoCellProfile.getCellProfileById(2);
+		CellProfile cellProfile = DaoCellProfile.getCellProfileById(1);
 		assertEquals(studyId, cellProfile.getCancerStudyId());
-		assertEquals("Putative copy-number alterations from GISTIC", cellProfile.getProfileName());
-		assertEquals(CellAlterationType.COPY_NUMBER_ALTERATION, cellProfile.getCellAlterationType());
+        assertEquals("Relative immune cell abundance values from CiberSort", cellProfile.getProfileName());
+        assertEquals(CellAlterationType.CELL_RELATIVE_ABUNDANCE, cellProfile.getCellAlterationType());
 	}
 	
 	@Test
 	public void testDaoDeleteCellProfile() throws DaoException {
 
-		CellProfile cellProfile = DaoCellProfile.getCellProfileById(2);
+		CellProfile cellProfile = DaoCellProfile.getCellProfileById(1);
 
-		assertEquals(6, DaoCellProfile.getCount());
+		assertEquals(1, DaoCellProfile.getCount());
 		DaoCellProfile.deleteCellProfile(cellProfile);
-		assertEquals(5, DaoCellProfile.getCount());
+		assertEquals(0, DaoCellProfile.getCount());
 		
-		ArrayList<CellProfile> list = DaoCellProfile.getAllCellProfiles(studyId);
-		assertEquals(5, list.size());
-		cellProfile = list.get(0);
-		assertEquals(studyId, cellProfile.getCancerStudyId());
-		assertEquals("mRNA expression (microarray)", cellProfile.getProfileName());
-		assertEquals(CellAlterationType.MRNA_EXPRESSION, cellProfile.getCellAlterationType());
 	}
 
 	@Test
 	public void testDaoUpdateCellProfile() throws DaoException {
 
-		CellProfile cellProfile = DaoCellProfile.getCellProfileByStableId("study_tcga_pub_gistic");
+		CellProfile cellProfile = DaoCellProfile.getCellProfileByStableId("linear_CRA");
 
 		assertTrue(DaoCellProfile.updateNameAndDescription(
 				cellProfile.getCellProfileId(), "Updated Name",
 				"Updated Description"));
 		ArrayList<CellProfile> list = DaoCellProfile.getAllCellProfiles(studyId);
-		assertEquals(6, list.size());
+		assertEquals(1, list.size());
 		cellProfile = list.get(0);
 		assertEquals(studyId, cellProfile.getCancerStudyId());
 		assertEquals("Updated Name", cellProfile.getProfileName());
-		assertEquals(CellAlterationType.COPY_NUMBER_ALTERATION, cellProfile.getCellAlterationType());
+		assertEquals(CellAlterationType.CELL_RELATIVE_ABUNDANCE, cellProfile.getCellAlterationType());
 		assertEquals("Updated Description", cellProfile.getProfileDescription());
 	}
 }
