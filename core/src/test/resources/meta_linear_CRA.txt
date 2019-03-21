@@ -1,0 +1,8 @@
+cancer_study_identifier: study_tcga_pub
+genetic_alteration_type: CELL_RELATIVE_ABUNDANCE
+datatype: CONTINUOUS
+data_filename: data_linear_CRA.txt
+stable_id: linear_CRA
+show_profile_in_analysis_tab: false
+profile_description: Relative linear relative abundance values (0 to 1) for each cell type
+profile_name: Relative immune cell abundance values from CiberSort
