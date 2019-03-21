@@ -1,5 +1,3 @@
-/* LICENSE_TBD */
-
 package org.mskcc.cbio.portal.dao;
 
 import java.sql.Connection;
@@ -11,8 +9,8 @@ import java.sql.Statement;
 public class DaoCellEntity {
 
 	/**
-  * Private Constructor to enforce Singleton Pattern.
-  */
+     * Private Constructor to enforce Singleton Pattern.
+     */
     private DaoCellEntity() {
     }
     
@@ -25,7 +23,7 @@ public class DaoCellEntity {
      * Adds a new cell entity Record to the Database and 
      * returns the auto generated id value.
      *
-     * @param  entityType : one of EntityTypes
+     * @param entityType : one of EntityTypes
      * @return : auto generated cell entity id value
      * @throws DaoException Database Error.
      */
@@ -36,17 +34,16 @@ public class DaoCellEntity {
         ResultSet rs = null;
         try {
             con = JdbcUtil.getDbConnection(DaoCell.class);
-        	  pstmt = con.prepareStatement
-                    ("INSERT INTO IM_cell_entity (`ENTITY_TYPE`) "
-                            + "VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-            //behavior of mysql auto increment is +1 from the max of the column
-        	  pstmt.setString(1, entityType.name());
+        	pstmt = con.prepareStatement
+                ("INSERT INTO IM_cell_entity (`ENTITY_TYPE`) "
+                    + "VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+        	pstmt.setString(1, entityType.name());
             pstmt.executeUpdate();
             //get the auto generated key:
             rs = pstmt.getGeneratedKeys();
             rs.next();
             int newId = rs.getInt(1);
-            return newId; // this is the newly generated cellEntityId
+            return newId;
         } catch (SQLException e) {
             throw new DaoException(e);
         } finally {

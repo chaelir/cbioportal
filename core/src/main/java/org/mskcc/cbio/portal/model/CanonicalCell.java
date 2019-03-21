@@ -17,15 +17,15 @@ import java.util.Set;
  * Class to wrap Cell Entity ID etc.
  */
 public class CanonicalCell extends Cell {
-    private int cellEntityId;  // unique, auto-increment
-    private long uniqueCellId; // unique
+    private int cellEntityId;      // unique, auto-increment
+    private long uniqueCellId;     // unique
     private String uniqueCellName; // unique
     private Set<String> aliases;
     private String type;
     private String organ;
-    private int cpId;  //cellpedia cell id
-    private int anatomyId; //cellpedia anatomy id 
-    private int cellTypeId; //cellpedia cell type id
+    private String anatomyId; //IM_cell.ANATOMY_ID
+    private int cellTypeId;   //IM_cell.CELL_TYPE_ID
+    private int cpId;         //IM_cell.CPID
 
     /**
      * This constructor can be used when cellEntityId is not yet known, 
@@ -65,11 +65,11 @@ public class CanonicalCell extends Cell {
         this.type = type;
     }
 
-    public int getAnatomyId() {
+    public String getAnatomyId() {
         return anatomyId;
     }
 
-    public void setAnatomyId(int anatomyId) {
+    public void setAnatomyId(String anatomyId) {
         this.anatomyId = anatomyId;
     }
     
