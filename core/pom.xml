@@ -376,6 +376,7 @@
                   </goals>
                   <configuration>
                       <includes>cgds.sql</includes>
+                      <includes>cgds_im.sql</includes>
                       <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
                       <includeArtifactIds>db-scripts</includeArtifactIds>
                   </configuration>
@@ -412,6 +413,10 @@
               <srcFiles>
                 <srcFile>${project.build.testOutputDirectory}/cgds.sql</srcFile>
                 <srcFile>src/test/resources/seed_mini.sql</srcFile>
+                <!-- cgds_im.sql creates study independent structures -->
+                <srcFile>${project.build.testOutputDirectory}/cgds_im.sql</srcFile>
+                <!-- cgds_im_test_seed_mini.sql creates mini studies -->
+                <srcFile>${project.build.testOutputDirectory}/cgds_im_test_seed_mini.sql</srcFile>
               </srcFiles>
               <!-- added encoding to prevent Unknown initial character set index '192' received from server error -->
               <encoding>UTF-8</encoding>

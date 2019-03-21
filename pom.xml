@@ -614,6 +614,7 @@
   <build>
     <resources>
       <resource>
+        <!-- where the property files go -->
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
         <includes>
@@ -622,6 +623,7 @@
           <include>**/git.properties</include>
         </includes>
       </resource>
+      <!-- excludes the property files from filtering, overwrite the previous includes -->
       <resource>
         <directory>src/main/resources</directory>
         <filtering>false</filtering>
