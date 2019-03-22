@@ -16,7 +16,7 @@ public class DaoCellEntity {
     
     public static enum EntityTypes
     {
-        CELL
+        CELL;
     }
     
     /**
@@ -29,18 +29,20 @@ public class DaoCellEntity {
      */
     public static int addNewCellEntity(EntityTypes entityType) throws DaoException {
 
+        System.err.println("START addNewCellEntity");
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;
         try {
+            System.err.println("addNewCellEntity: getDbConnection");
             con = JdbcUtil.getDbConnection(DaoCell.class);
             //NOTE: this sql requires auto_increment of ID column in the table schema 
-            System.err.println(pstmt.toString());
+            System.err.println("addNewCellEntity: prepareStatement");
         	pstmt = con.prepareStatement
                 ("INSERT INTO IM_cell_entity (`ENTITY_TYPE`) "
                     + "VALUES (?)", Statement.RETURN_GENERATED_KEYS);
-        	System.err.println("Statement OK");
         	pstmt.setString(1, entityType.name());
+            System.err.println("addNewCellEntity: executeUpdate");
             pstmt.executeUpdate();
             //get the auto generated key:
             rs = pstmt.getGeneratedKeys();
