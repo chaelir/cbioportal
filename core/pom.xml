@@ -383,9 +383,12 @@
                     <excludeTransitive>true</excludeTransitive>
                     <overWriteReleases>true</overWriteReleases>
                     <overWriteSnapshots>true</overWriteSnapshots>
-                    <!-- the correct syntax to include multiple files -->
-                    <includes>cgds.sql</includes>
-                    <includes>cgds_im.sql</includes>
+                    <!-- temporarily include all sql scripts -->
+                    <includes>/*.sql</includes>
+                    <!-- TODO: what is the syntax to include multiple files
+                      <includes>cgds.sql</includes>
+                      <includes>cgds_im.sql</includes>
+                    -->
                   </configuration>
               </execution>
           </executions>

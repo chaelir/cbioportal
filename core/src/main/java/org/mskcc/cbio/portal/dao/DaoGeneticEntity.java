@@ -36,6 +36,7 @@ public class DaoGeneticEntity {
         ResultSet rs = null;
         try {
             con = JdbcUtil.getDbConnection(DaoGene.class);
+            //NOTE: this sql requires auto_increment of ID column in the table schema 
         	pstmt = con.prepareStatement
                     ("INSERT INTO genetic_entity (`ENTITY_TYPE`) "
                             + "VALUES (?)", Statement.RETURN_GENERATED_KEYS);

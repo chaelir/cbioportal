@@ -34,9 +34,12 @@ public class DaoCellEntity {
         ResultSet rs = null;
         try {
             con = JdbcUtil.getDbConnection(DaoCell.class);
+            //NOTE: this sql requires auto_increment of ID column in the table schema 
+            System.err.println(pstmt.toString());
         	pstmt = con.prepareStatement
                 ("INSERT INTO IM_cell_entity (`ENTITY_TYPE`) "
                     + "VALUES (?)", Statement.RETURN_GENERATED_KEYS);
+        	System.err.println("Statement OK");
         	pstmt.setString(1, entityType.name());
             pstmt.executeUpdate();
             //get the auto generated key:
