@@ -375,10 +375,16 @@
                       <goal>unpack-dependencies</goal>
                   </goals>
                   <configuration>
-                      <includes>cgds.sql</includes>
-                      <includes>cgds_im.sql</includes>
-                      <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
-                      <includeArtifactIds>db-scripts</includeArtifactIds>
+                    <includeArtifactIds>db-scripts</includeArtifactIds>
+                    <outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
+                    <filtering>false</filtering>
+                    <!-- this forces overwrite each build -->
+                    <overWrite>true</overWrite>
+                    <excludeTransitive>true</excludeTransitive>
+                    <overWriteReleases>true</overWriteReleases>
+                    <overWriteSnapshots>true</overWriteSnapshots>
+                    <!-- the correct syntax to include multiple files -->
+                    <includes>cgds.sql,cgds_im.sql</includes>
                   </configuration>
               </execution>
           </executions>
