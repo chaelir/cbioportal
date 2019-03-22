@@ -384,7 +384,8 @@
                     <overWriteReleases>true</overWriteReleases>
                     <overWriteSnapshots>true</overWriteSnapshots>
                     <!-- the correct syntax to include multiple files -->
-                    <includes>cgds.sql,cgds_im.sql</includes>
+                    <includes>cgds.sql</includes>
+                    <includes>cgds_im.sql</includes>
                   </configuration>
               </execution>
           </executions>
