@@ -95,24 +95,31 @@ public class TestGetCellProfileData {
         targetCellList.add("ACTIVATED_B_CELL");
         targetCellList.add("NAIVE_B_CELL");
         targetCellList.add("BASOPHIL");
+        // require preexisting cells in the cell profile
 
         ArrayList <String> cellProfileIdList = new ArrayList<String>();
         cellProfileIdList.add("linear_CRA");
+        // require a preexisting cell profile
 
         ArrayList <String> sampleIdList = new ArrayList <String>();
         sampleIdList.add("TCGA-A1-A0SB-01");
         sampleIdList.add("TCGA-A1-A0SD-01");
         sampleIdList.add("TCGA-A1-A0SE-01");
+        // require preexisting samples in the cell profile
 
         GetCellProfileData getCellProfileData = new GetCellProfileData(cellProfileIdList, targetCellList,
                 sampleIdList, new Boolean(false));
+        // read the cell profile
+        
         String out = getCellProfileData.getRawContent();
+        System.err.println(out);
         String lines[] = out.split("\n");
         assertEquals("# DATA_TYPE\t Relative immune cell abundance values from CiberSort" , lines[0]);
         assertEquals("# COLOR_GRADIENT_SETTINGS\t CELL_RELATIVE_ABUNDANCE", lines[1]);
-        assertTrue(lines[2].startsWith("GENE_ID\tCOMMON\tTCGA-A1-A0SB-01\t" +
+        assertTrue(lines[2].startsWith("CELL_ID\tCOMMON\tTCGA-A1-A0SB-01\t" +
                 "TCGA-A1-A0SD-01\tTCGA-A1-A0SE-01"));
-        assertTrue(lines[3].startsWith("1\tB_CELL\t0\t0\t0"));
-        assertTrue(lines[4].startsWith("2\tMEMORY_B_CELL\t0\t0\t0"));
+        //return values are sorted by symbol
+        assertTrue(lines[3].startsWith("3\tACTIVATED_B_CELL\tNA\tNA\tNA"));
+        assertTrue(lines[4].startsWith("5\tBASOPHIL\t0.9240\t0.04330\t0.08660"));
     }
 }

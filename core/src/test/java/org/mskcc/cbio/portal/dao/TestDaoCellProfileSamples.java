@@ -61,20 +61,20 @@ public class TestDaoCellProfileSamples {
 	@Before
 	public void setUp() throws DaoException {
 		study = DaoCancerStudy.getCancerStudyByStableId("study_tcga_pub");
-		cellProfileId = DaoCellProfile.getCellProfileByStableId("linear_CNA").getCellProfileId();
+		cellProfileId = DaoCellProfile.getCellProfileByStableId("linear_CRA_test").getCellProfileId();
 		
 		internalSampleIds = new ArrayList<Integer>();
-        Patient p = new Patient(study, "TCGA-1");
+        Patient p = new Patient(study, "CELL-A2"); //?use the same id as TestDaoCellAlteration
         int pId = DaoPatient.addPatient(p);
         
         DaoSample.reCache();
-        Sample s = new Sample("XCGA-A1-A0SB-01", pId, "brca");
+        Sample s = new Sample("CELL-A2-TEST-01", pId, "brca");
         internalSampleIds.add(DaoSample.addSample(s));
-        s = new Sample("XCGA-A1-A0SD-01", pId, "brca");
+        s = new Sample("CELL-A2-TEST-02", pId, "brca");
         internalSampleIds.add(DaoSample.addSample(s));
-        s = new Sample("XCGA-A1-A0SE-01", pId, "brca");
+        s = new Sample("CELL-A2-TEST-03", pId, "brca");
         internalSampleIds.add(DaoSample.addSample(s));
-        s = new Sample("XCGA-A1-A0SF-01", pId, "brca");
+        s = new Sample("CELL-A2-TEST-04", pId, "brca");
         internalSampleIds.add(DaoSample.addSample(s));
 	}
 

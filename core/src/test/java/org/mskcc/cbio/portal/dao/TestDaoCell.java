@@ -84,7 +84,7 @@ public class TestDaoCell {
 	@Test
 	public void testMonocyteById() {
 		CanonicalCell cell = DaoCellOptimized.getInstance().getCell(13);
-		assertEquals("MONOCYTE CPID=13", cell.getUniqueCellNameAllCaps());
+		assertEquals("MONOCYTE", cell.getUniqueCellNameAllCaps());
 		assertEquals(13, cell.getUniqueCellId());
 	}
 
@@ -94,7 +94,7 @@ public class TestDaoCell {
 	@Test
 	public void testMacrophageById() {
 		CanonicalCell cell = DaoCellOptimized.getInstance().getCell(9);
-		assertEquals("MACROPHAGE CPID=9", cell.getUniqueCellNameAllCaps());
+		assertEquals("MACROPHAGE", cell.getUniqueCellNameAllCaps());
 		assertEquals(9, cell.getUniqueCellId());
 	}
 
@@ -103,8 +103,8 @@ public class TestDaoCell {
 	 */
 	@Test
 	public void testMacrophageByName() {
-		CanonicalCell cell = DaoCellOptimized.getInstance().getCell("Macrophage CPID=9");
-		assertEquals("MACROPHAGE CPID=9", cell.getUniqueCellNameAllCaps());
+		CanonicalCell cell = DaoCellOptimized.getInstance().getCell("Macrophage");
+		assertEquals("MACROPHAGE", cell.getUniqueCellNameAllCaps());
 		assertEquals(9, cell.getUniqueCellId());
 	}
 

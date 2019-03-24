@@ -130,6 +130,7 @@ public class DaoCellAlteration {
             pstmt.setInt(1, cellProfileId);
             pstmt.setLong(2, cellEntityId);
             pstmt.setString(3, valueBuffer.toString());
+            System.err.println("Before SQL execution");
             return pstmt.executeUpdate();
         } catch (SQLException e) {
             throw new DaoException(e);

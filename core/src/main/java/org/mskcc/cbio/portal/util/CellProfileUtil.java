@@ -89,13 +89,16 @@ public class CellProfileUtil {
     }
     */
     
-    /* NOTE: disabled cell Panel stuff
     public static int getCellPanelId(String panelId) {
+        /* NOTE: currently a place holder 
         CellPanelRepositoryLegacy cellPanelRepositoryLegacy = (CellPanelRepositoryLegacy)SpringUtil.getApplicationContext().getBean("cellPanelRepositoryLegacy");  
         CellPanel cellPanel = cellPanelRepositoryLegacy.getCellPanelByStableId(panelId).get(0);
         return cellPanel.getInternalId();
+        */
+        return -1;
     }
 
+    /* NOTE: disabled cell Panel stuff
     public static boolean cellInPanel(CanonicalCell cell, CellPanel cellPanel) {
          for (Cell panelCell : cellPanel.getCells()) {
             if (panelCell.getEntrezCellId().longValue() == cell.getEntrezCellId()) {

@@ -97,7 +97,7 @@ public class ImportCellProfileData extends ConsoleRunnable {
                 importer.importData(numLines);
             }
             */
-            ImportTabDelimData importer = new ImportTabDelimData(dataFile, cellProfile.getTargetLine(), cellProfile.getCellProfileId(), cellPanel);
+            ImportTabCellData importer = new ImportTabCellData(dataFile, cellProfile.getTargetLine(), cellProfile.getCellProfileId(), cellPanel);
             importer.importData(numLines);
        }
        catch (Exception e) {

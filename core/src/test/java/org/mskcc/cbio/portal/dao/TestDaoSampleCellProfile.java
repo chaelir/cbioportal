@@ -64,21 +64,21 @@ public class TestDaoSampleCellProfile {
 		cellProfileId = DaoCellProfile.getCellProfileByStableId("linear_CRA").getCellProfileId();
 		
 		internalSampleIds = new ArrayList<Integer>();
-        Patient p = new Patient(study, "TCGA-12345");
+        Patient p = new Patient(study, "TCGA-54321");
         int pId = DaoPatient.addPatient(p);
         
         DaoSample.reCache();
-        Sample s = new Sample("TCGA-12345-01", pId, "brca");
+        Sample s = new Sample("TCGA-54321-01", pId, "brca");
         internalSampleIds.add(DaoSample.addSample(s));
-        s = new Sample("TCGA-123456-01", pId, "brca");
+        s = new Sample("TCGA-09876-01", pId, "brca");
         internalSampleIds.add(DaoSample.addSample(s));
 	}
 
 	@Test
     public void testDaoSampleCellProfile() throws DaoException {
 
-        Patient patient = DaoPatient.getPatientByCancerStudyAndPatientId(study.getInternalId(), "TCGA-12345");
-        Sample sample = DaoSample.getSampleByPatientAndSampleId(patient.getInternalId(), "TCGA-12345-01");
+        Patient patient = DaoPatient.getPatientByCancerStudyAndPatientId(study.getInternalId(), "TCGA-54321");
+        Sample sample = DaoSample.getSampleByPatientAndSampleId(patient.getInternalId(), "TCGA-54321-01");
 
         int num = DaoSampleCellProfile.addSampleCellProfile(sample.getInternalId(), cellProfileId, null);
         assertEquals(1, num);
@@ -88,12 +88,12 @@ public class TestDaoSampleCellProfile {
 
         assertEquals(cellProfileId, DaoSampleCellProfile.getCellProfileIdForSample(sample.getInternalId()));
 
-        sample = DaoSample.getSampleByPatientAndSampleId(patient.getInternalId(), "TCGA-123456-01");
+        sample = DaoSample.getSampleByPatientAndSampleId(patient.getInternalId(), "TCGA-09876-01");
         num = DaoSampleCellProfile.addSampleCellProfile(sample.getInternalId(), cellProfileId, null);
         assertEquals(1, num);
 
-        /* NOTE: not sure of this result
-           guess 8: 6 samples in data_linear_CRA.txt + 2 just added
+        /* NOTE:
+           expected: 6 existing samples in linear_CR + the 2 just added samples
         */
         ArrayList<Integer> sampleIds = DaoSampleCellProfile.getAllSampleIdsInProfile(cellProfileId);
         assertEquals(8, sampleIds.size());

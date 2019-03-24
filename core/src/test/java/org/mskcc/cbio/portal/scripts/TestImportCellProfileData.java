@@ -23,6 +23,7 @@
 
 package org.mskcc.cbio.portal.scripts;
 
+import java.util.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -38,17 +39,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mskcc.cbio.portal.dao.DaoCancerStudy;
-import org.mskcc.cbio.portal.dao.DaoClinicalAttributeMeta;
-import org.mskcc.cbio.portal.dao.DaoClinicalData;
-import org.mskcc.cbio.portal.dao.DaoCnaEvent;
-import org.mskcc.cbio.portal.dao.DaoException;
-import org.mskcc.cbio.portal.dao.DaoCellOptimized;
-import org.mskcc.cbio.portal.dao.DaoCellProfile;
-import org.mskcc.cbio.portal.dao.DaoMutation;
-import org.mskcc.cbio.portal.dao.DaoSample;
-import org.mskcc.cbio.portal.dao.DaoSampleProfile;
-import org.mskcc.cbio.portal.dao.MySQLbulkLoader;
+import org.mskcc.cbio.portal.dao.*;
 import org.mskcc.cbio.portal.model.CancerStudy;
 import org.mskcc.cbio.portal.model.CanonicalCell;
 import org.mskcc.cbio.portal.model.ClinicalAttribute;
@@ -86,11 +77,11 @@ public class TestImportCellProfileData {
 
     @After
     public void cleanUp() throws DaoException {
-        // each test assumes the mutation data hasn't been loaded yet
-        CellProfile cellProfile = DaoCellProfile.getCellProfileByStableId("linear_CRA");
+        // the part of stable id excluding cancer study id must be synced with meta_linear_CRA.txt file
+        CellProfile cellProfile = DaoCellProfile.getCellProfileByStableId("study_tcga_pub_linear_CRA_import");
         if (cellProfile != null) {
             DaoCellProfile.deleteCellProfile(cellProfile);
-            assertNull(DaoCellProfile.getCellProfileByStableId("linear_CRA"));
+            assertNull(DaoCellProfile.getCellProfileByStableId("study_tcga_pub_linear_CRA_import"));
         }
     }
 
@@ -255,62 +246,89 @@ public class TestImportCellProfileData {
         DaoCellProfile.deleteCellProfile(cellProfile);
         assertNull(DaoCellProfile.getCellProfileByStableId(studyStableId + "_breast_mutations"));
     }
+    */
 
     @Test
-    public void testImportCNAFile() throws Exception {
+    public void testImportCRAFile() throws Exception {
         //cells in this test:
         DaoCellOptimized daoCell = DaoCellOptimized.getInstance();
-        daoCell.addCell(new CanonicalCell(999999672, "TESTBRCA1"));
-        daoCell.addCell(new CanonicalCell(999999675, "TESTBRCA2"));
+        //daoCell.addCell(new CanonicalCell(999999001, "FAKE_B_CELL"));
+        //daoCell.addCell(new CanonicalCell(999999018, "FAKE_T_CELL"));
         MySQLbulkLoader.flushAll();
         String[] args = {
-                "--data","src/test/resources/data_CNA_sample.txt",
-                "--meta","src/test/resources/meta_CNA.txt" ,
+                "--data","src/test/resources/data_linear_CRA.txt",
+                "--meta","src/test/resources/meta_linear_CRA.txt" ,
                 "--noprogress",
                 "--loadMode", "bulkLoad"
         };
-        String[] sampleIds = {"TCGA-02-0001-01","TCGA-02-0003-01","TCGA-02-0004-01","TCGA-02-0006-01"};
         //This test is to check if the ImportProfileData class indeed adds the study stable Id in front of the
         //dataset study id (e.g. studyStableId + "_breast_mutations"):
         String studyStableId = "study_tcga_pub";
         CancerStudy study = DaoCancerStudy.getCancerStudyByStableId(studyStableId);
         studyId = study.getInternalId();
-        //will be needed when relational constraints are active:
-        ImportDataUtil.addPatients(sampleIds, study);
-        ImportDataUtil.addSamples(sampleIds, study);
+        /* NOTE: no longer needed, as these sampleIds will be already in sample table
+          //will be needed when relational constraints are active:
+          //ImportDataUtil.addPatients(sampleIds, study);
+          //ImportDataUtil.addSamples(sampleIds, study);
+        */
         try {
-            ImportProfileData runner = new ImportProfileData(args);
+            ImportCellProfileData runner = new ImportCellProfileData(args);
             runner.run();
         } catch (Throwable e) {
             //useful info for when this fails:
             ConsoleUtil.showMessages();
             throw e;
         }
-        cellProfileId = DaoCellProfile.getCellProfileByStableId(studyStableId + "_cna").getCellProfileId();
+        //System.err.println(DaoCellProfile.getAllCellProfiles(study.getInternalId()).size());
+        //System.err.println(DaoCellProfile.getCellProfileByStableId("linear_CRA").getCellProfileId());
+        //System.err.println(DaoCellProfile.getCellProfileByStableId("linear_CRA_test").getCellProfileId());
+        String sample = "TCGA-A1-A0SD-01";
+        int sampleId = DaoSample.getSampleByCancerStudyAndSampleId(studyId, sample).getInternalId();
+        assertEquals(2, sampleId);
+        // Test the profile is inserted in IM_cell_profile
+        int cellProfileId = DaoCellProfile.getCellProfileByStableId("study_tcga_pub_linear_CRA_import").getCellProfileId();
+        assertEquals(3, cellProfileId);
+        // Test the profile is inserted in IM_cell_alteration
+        HashMap<Integer, String> valueMap = DaoCellAlteration.getInstance().getCellAlterationMap(cellProfileId, 5);
+        /*
+        for (int i : valueMap.keySet()) {
+            System.err.println("key: " + i + " value: " + valueMap.get(i));
+        }*/
+        assertEquals("0.04330", valueMap.get(sampleId));
+        // Test the profile is inserted in IM_sample_cell_profile
+        assertEquals(cellProfileId, DaoSampleCellProfile.getCellProfileIdForSample(sampleId));
+        // Test the profile is inserted in IM_cell_profile_samples
+        assertEquals("1,2,3,4,5,6,", DaoCellProfileSamples.getOrderedSampleList(cellProfileId));
+        /* NOTE: obsolete, no longer needed, this test does not introduce new samples to test data
+        String[] sampleIds = {"TCGA-02-0001-01","TCGA-02-0003-01","TCGA-02-0004-01","TCGA-02-0006-01"};
         List<Integer> sampleInternalIds = new ArrayList<Integer>();
         DaoSample.reCache();
         for (String sample : sampleIds) {
             sampleInternalIds.add(DaoSample.getSampleByCancerStudyAndSampleId(studyId, sample).getInternalId());
         }
-        Collection<Short> cnaLevels = Arrays.asList((short)-2, (short)2);
-        List<CnaEvent> cnaEvents = DaoCnaEvent.getCnaEvents(sampleInternalIds, null, cellProfileId, cnaLevels);
-        assertEquals(2, cnaEvents.size());
+        */
+        // Retrieving data of BASOPHIL
+        /* NOTE disabled following cna tests, what to be tested for CRA?*/
+        //Collection<Short> cnaLevels = Arrays.asList((short)-2, (short)2);
+        //List<CnaEvent> cnaEvents = DaoCnaEvent.getCnaEvents(sampleInternalIds, null, cellProfileId, cnaLevels);
+        //assertEquals(2, cnaEvents.size());
         //validate specific records. Data looks like:
         //999999672    TESTBRCA1    -2    0    1    0
         //999999675    TESTBRCA2    0    2    0    -1
         //Check if the first two samples are loaded correctly:
-        int sampleId = DaoSample.getSampleByCancerStudyAndSampleId(studyId, "TCGA-02-0001-01").getInternalId();
-        sampleInternalIds = Arrays.asList((int)sampleId);
-        CnaEvent cnaEvent = DaoCnaEvent.getCnaEvents(sampleInternalIds, null, cellProfileId, cnaLevels).get(0);
-        assertEquals(-2, cnaEvent.getAlteration().getCode());
-        assertEquals("TESTBRCA1", cnaEvent.getCellSymbol());
-        sampleId = DaoSample.getSampleByCancerStudyAndSampleId(studyId, "TCGA-02-0003-01").getInternalId();
-        sampleInternalIds = Arrays.asList((int)sampleId);
-        cnaEvent = DaoCnaEvent.getCnaEvents(sampleInternalIds, null, cellProfileId, cnaLevels).get(0);
-        assertEquals(2, cnaEvent.getAlteration().getCode());
-        assertEquals("TESTBRCA2", cnaEvent.getCellSymbol());
+        //int sampleId = DaoSample.getSampleByCancerStudyAndSampleId(studyId, "TCGA-02-0001-01").getInternalId();
+        //sampleInternalIds = Arrays.asList((int)sampleId);
+        //CnaEvent cnaEvent = DaoCnaEvent.getCnaEvents(sampleInternalIds, null, cellProfileId, cnaLevels).get(0);
+        //assertEquals(-2, cnaEvent.getAlteration().getCode());
+        //assertEquals("TESTBRCA1", cnaEvent.getCellSymbol());
+        //sampleId = DaoSample.getSampleByCancerStudyAndSampleId(studyId, "TCGA-02-0003-01").getInternalId();
+        //sampleInternalIds = Arrays.asList((int)sampleId);
+        //cnaEvent = DaoCnaEvent.getCnaEvents(sampleInternalIds, null, cellProfileId, cnaLevels).get(0);
+        //assertEquals(2, cnaEvent.getAlteration().getCode());
+        //assertEquals("TESTBRCA2", cnaEvent.getCellSymbol());
     }
 
+    /*
     private void validateMutationAminoAcid (int cellProfileId, Integer sampleId, long entrezCellId, String expectedAminoAcidChange) throws DaoException {
         ArrayList<ExtendedMutation> mutationList = DaoMutation.getMutations(cellProfileId, sampleId, entrezCellId);
         assertEquals(1, mutationList.size());
@@ -320,12 +338,14 @@ public class TestImportCellProfileData {
 
     private static void loadCells() throws DaoException {
         DaoCellOptimized daoCell = DaoCellOptimized.getInstance();
-        // add the 5 cells used in "data_linear_CRA.txt"
+        
+        /* NOTE: these cells are all in cgds_test already, no need to load
         daoCell.addCell(new CanonicalCell(1, "B_CELL"));
         daoCell.addCell(new CanonicalCell(2, "MEMORY_B_CELL"));
         daoCell.addCell(new CanonicalCell(3, "ACTIVATED_B_CELL"));
         daoCell.addCell(new CanonicalCell(4, "NAIVE_B_CELL"));
         daoCell.addCell(new CanonicalCell(5, "BASOPHIL"));
+        */
         
         MySQLbulkLoader.flushAll();
     }

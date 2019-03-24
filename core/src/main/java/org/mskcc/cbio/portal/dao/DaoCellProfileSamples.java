@@ -67,7 +67,7 @@ public final class DaoCellProfileSamples
         try {
             con = JdbcUtil.getDbConnection(DaoCellProfileSamples.class);
             pstmt = con.prepareStatement("DELETE from " +
-                    "cell_profile_samples WHERE CELL_PROFILE_ID=?");
+                    "IM_cell_profile_samples WHERE CELL_PROFILE_ID=?");
             pstmt.setLong(1, cellProfileId);
             pstmt.executeUpdate();
         } catch (SQLException e) {

@@ -27,24 +27,27 @@ public class TestDaoCellAlteration {
 	CancerStudy study;
 	ArrayList<Integer> internalSampleIds;
 	int cellProfileId;
+
+	// I am modifying this test to operate on an empty cell profile
 	
 	@Before
 	public void setUp() throws DaoException {
 		study = DaoCancerStudy.getCancerStudyByStableId("study_tcga_pub");
-		cellProfileId = DaoCellProfile.getCellProfileByStableId("linear_CRA").getCellProfileId();
+		cellProfileId = DaoCellProfile.getCellProfileByStableId("linear_CRA_test").getCellProfileId();
+		// get cellProfileId of existing cell profile with stable_id linear_CRA
 		
 		internalSampleIds = new ArrayList<Integer>();
-        Patient p = new Patient(study, "TCGA-1");
+        Patient p = new Patient(study, "CELL-A1");
         int pId = DaoPatient.addPatient(p);
         
         DaoSample.reCache();
-        Sample s = new Sample("XCGA-A1-A0SB-01", pId, "brca");
+        Sample s = new Sample("CELL-A1-TEST-01", pId, "brca");
         internalSampleIds.add(DaoSample.addSample(s));
-        s = new Sample("XCGA-A1-A0SD-01", pId, "brca");
+        s = new Sample("CELL-A1-TEST-02", pId, "brca");
         internalSampleIds.add(DaoSample.addSample(s));
-        s = new Sample("XCGA-A1-A0SE-01", pId, "brca");
+        s = new Sample("CELL-A1-TEST-03", pId, "brca");
         internalSampleIds.add(DaoSample.addSample(s));
-        s = new Sample("XCGA-A1-A0SF-01", pId, "brca");
+        s = new Sample("CELL-A1-TEST-04", pId, "brca");
         internalSampleIds.add(DaoSample.addSample(s));
 	}
 
@@ -70,11 +73,14 @@ public class TestDaoCellAlteration {
         int numRows = DaoCellProfileSamples.addCellProfileSamples(cellProfileId, internalSampleIds);
         assertEquals(1, numRows);
 
-        //  Add Some Data to B-cell (uniqueCellId=1)
+        //  Add Some Data to EOSINOPHIL cell (uniqueCellId=6)
+        //  this Cell must not pre-exists in linear_CRA_test data
+        //  otherwise it will cause a duplicated primary key error
         String data = "200:400:600:800";
         String values[] = data.split(":");
         DaoCellAlteration dao = DaoCellAlteration.getInstance();
-        numRows = dao.addCellAlterations(cellProfileId, 1, values); 
+        numRows = dao.addCellAlterations(cellProfileId, 6, values);
+        System.err.println("After SQL execution");
         assertEquals(1, numRows);
 
         // if bulkLoading, execute LOAD FILE
@@ -82,7 +88,7 @@ public class TestDaoCellAlteration {
            MySQLbulkLoader.flushAll();
         }
 
-        HashMap<Integer, String> valueMap = dao.getCellAlterationMap(cellProfileId, 1);
+        HashMap<Integer, String> valueMap = dao.getCellAlterationMap(cellProfileId, 6);
         assertEquals ("200", valueMap.get(internalSampleIds.get(0)));
         assertEquals ("400", valueMap.get(internalSampleIds.get(1)));
         assertEquals ("600", valueMap.get(internalSampleIds.get(2)));
@@ -93,8 +99,8 @@ public class TestDaoCellAlteration {
         ArrayList <CanonicalCell> cellList = new ArrayList <CanonicalCell> (cellSet);
         assertEquals (1, cellList.size());
         CanonicalCell cell = cellList.get(0);
-        assertEquals ("B CELL CPID=1", cell.getUniqueCellNameAllCaps());
-        assertEquals (1, cell.getUniqueCellId());
+        assertEquals ("EOSINOPHIL", cell.getUniqueCellNameAllCaps());
+        assertEquals (6, cell.getUniqueCellId());
         
     }
 }

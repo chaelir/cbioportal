@@ -139,6 +139,8 @@ public final class DaoSampleCellProfile {
     }
 
     public static int getCellProfileIdForSample(int sampleId) throws DaoException {
+        // TODO: this seems not correct 
+        //   a sample could have multiple cell profiles however this only returns the first one
         Connection con = null;
         PreparedStatement pstmt = null;
         ResultSet rs = null;

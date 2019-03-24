@@ -131,6 +131,7 @@ public final class DaoCellProfile {
        try {
            con = JdbcUtil.getDbConnection(DaoCellProfile.class);
            pstmt = con.prepareStatement("DELETE FROM IM_cell_profile WHERE STABLE_ID = ?");
+           // NOTE: assumed this will cascade to IM_cell_profile_samples and IM_sample_cell_profile.
            pstmt.setString(1, profile.getStableId());
            rows = pstmt.executeUpdate();
        } catch (SQLException e) {

@@ -68,7 +68,7 @@ public class TestDaoCellProfile {
 	public void testDaoGetAllCellProfiles() throws DaoException {
 
 		ArrayList<CellProfile> list = DaoCellProfile.getAllCellProfiles(studyId);
-		assertEquals(1, list.size());
+		assertEquals(2, list.size()); // two cell profiles in cgds_test
 	}
 		
 	@Test
@@ -125,9 +125,9 @@ public class TestDaoCellProfile {
 
 		CellProfile cellProfile = DaoCellProfile.getCellProfileById(1);
 
-		assertEquals(1, DaoCellProfile.getCount());
+		assertEquals(2, DaoCellProfile.getCount()); // two cell profiles in test data
 		DaoCellProfile.deleteCellProfile(cellProfile);
-		assertEquals(0, DaoCellProfile.getCount());
+		assertEquals(1, DaoCellProfile.getCount());
 		
 	}
 
@@ -140,7 +140,7 @@ public class TestDaoCellProfile {
 				cellProfile.getCellProfileId(), "Updated Name",
 				"Updated Description"));
 		ArrayList<CellProfile> list = DaoCellProfile.getAllCellProfiles(studyId);
-		assertEquals(1, list.size());
+		assertEquals(2, list.size()); //linear_CRA and linear_CRA_test
 		cellProfile = list.get(0);
 		assertEquals(studyId, cellProfile.getCancerStudyId());
 		assertEquals("Updated Name", cellProfile.getProfileName());

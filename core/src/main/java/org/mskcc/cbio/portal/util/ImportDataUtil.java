@@ -154,4 +154,18 @@ public class ImportDataUtil
             }
         }
     }
+
+    /* NOTE HK */
+    public static void addSampleCellProfile(Sample sample, Integer cellProfileID, String cellPanelID) throws DaoException
+    {
+        if (!DaoSampleCellProfile.sampleExistsInCellProfile(sample.getInternalId(), cellProfileID)) {
+            if (cellPanelID != null) {
+                throw new RuntimeException("Error: cellPanel is not supported! ");
+                // DaoSampleCellProfile.addSampleCellProfile(sample.getInternalId(), cellProfileID, CellProfileUtil.getCellPanelId(cellPanelID));
+            } else {
+                DaoSampleCellProfile.addSampleCellProfile(sample.getInternalId(), cellProfileID, null);
+            }
+        }
+    }
+    /* NOTE HK */
 }
