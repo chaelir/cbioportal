@@ -54,7 +54,8 @@ public class TestGetCellProfiles {
     @Test
     public void testDaoCellProfile() throws DaoException {
 
+        //this test is based on preloaded entry in IM_cell_profile
         String output = GetCellProfiles.getCellProfilesAsTable("study_tcga_pub");
-        assertTrue(output.contains("study_tcga_pub\tmRNA expression (microarray)\tExpression levels (Agilent microarray).\t1\tMRNA_EXPRESSION\tfalse"));
+        assertTrue(output.contains("1\tCELL_RELATIVE_ABUNDANCE\tfalse"));
     }
 }

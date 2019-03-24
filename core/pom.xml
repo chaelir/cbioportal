@@ -420,18 +420,17 @@
               <password>${db.test.password}</password>
               <sqlCommand>SET storage_engine=INNODB</sqlCommand>
               <sqlCommand>SET SESSION sql_mode = 'ANSI_QUOTES'</sqlCommand>
-              <!-- prevent forgein key check -->
-              <sqlCommand>SET FOREIGN_KEY_CHECKS = 0</sqlCommand>
               <srcFiles>
+                <!-- always clean up cgds tables before a test -->
+                <srcFile>src/test/resources/cgds_clean.sql</srcFile>
                 <srcFile>${project.build.testOutputDirectory}/cgds.sql</srcFile>
                 <srcFile>src/test/resources/seed_mini.sql</srcFile>
+                <!-- create IM table structures -->
                 <!-- cgds_im.sql creates study independent structures -->
                 <srcFile>${project.build.testOutputDirectory}/cgds_im.sql</srcFile>
-                <!-- cgds_im_test_seed_mini.sql creates mini studies -->
-                <srcFile>${project.build.testOutputDirectory}/cgds_im_test_seed_mini.sql</srcFile>
+                <!-- cgds_im_test_seed_mini.sql creates tables for test purpose studies -->
+                <srcFile>src/test/resources/cgds_im_test_seed_mini.sql</srcFile>
               </srcFiles>
-              <!-- reenable forgein key check -->
-              <sqlCommand>SET FOREIGN_KEY_CHECKS = 1</sqlCommand>
               <!-- added encoding to prevent Unknown initial character set index '192' received from server error -->
               <encoding>UTF-8</encoding>
               <driverProperties>characterEncoding=utf8, connectionCollation=utf8_general_ci</driverProperties>

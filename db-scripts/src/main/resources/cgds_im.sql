@@ -6048,6 +6048,32 @@ CREATE TABLE `IM_cell_profile_link` (
 
 /*!40000 ALTER TABLE `IM_cell_profile_link` DISABLE KEYS */;
 /*!40000 ALTER TABLE `IM_cell_profile_link` ENABLE KEYS */;
+
+--
+-- Table structure for table `IM_sample_cell_profile`
+--
+
+DROP TABLE IF EXISTS `IM_sample_cell_profile`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `IM_sample_cell_profile` (
+  `SAMPLE_ID` int(11) NOT NULL,
+  `CELL_PROFILE_ID` int(11) NOT NULL,
+  `PANEL_ID` int(11) DEFAULT NULL,
+  UNIQUE KEY `UQ_SAMPLE_ID_CELL_PROFILE_ID` (`SAMPLE_ID`,`CELL_PROFILE_ID`),
+  KEY `SAMPLE_ID` (`SAMPLE_ID`),
+  KEY `CELL_PROFILE_ID` (`CELL_PROFILE_ID`),
+  CONSTRAINT `im_sample_cell_profile_ibfk_1` FOREIGN KEY (`CELL_PROFILE_ID`) REFERENCES `IM_cell_profile` (`CELL_PROFILE_ID`) ON DELETE CASCADE,
+  CONSTRAINT `im_sample_cell_profile_ibfk_2` FOREIGN KEY (`SAMPLE_ID`) REFERENCES `sample` (`INTERNAL_ID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `IM_sample_cell_profile`
+--
+
+/*!40000 ALTER TABLE `IM_sample_cell_profile` DISABLE KEYS */;
+/*!40000 ALTER TABLE `IM_sample_cell_profile` ENABLE KEYS */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -6058,5 +6084,5 @@ CREATE TABLE `IM_cell_profile_link` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-03-23 15:33:46
+-- Dump completed on 2019-03-23 19:31:04
 SET FOREIGN_KEY_CHECKS = 1;

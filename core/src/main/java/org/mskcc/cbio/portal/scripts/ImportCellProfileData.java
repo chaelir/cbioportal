@@ -111,7 +111,7 @@ public class ImportCellProfileData extends ConsoleRunnable {
      *
      * @param args  the command line arguments to be used
      */
-    public ImportProfileData(String[] args) {
+    public ImportCellProfileData(String[] args) {
         super(args);
     }
 

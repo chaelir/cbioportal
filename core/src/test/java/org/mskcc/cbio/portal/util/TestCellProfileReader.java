@@ -67,7 +67,7 @@ public class TestCellProfileReader {
         File file = new File("target/test-classes/cell_profile_test.txt");
         CellProfile cellProfile = CellProfileReader.loadCellProfile(file);
         assertEquals("Barry", cellProfile.getTargetLine());
-        assertEquals("Blah Blah.", cellProfile.getProfileDescription());
+        assertEquals("this profile is in cell_profile_test.txt of resource not in IM_cell_profile", cellProfile.getProfileDescription());
 
         CancerStudy cancerStudy = DaoCancerStudy.getCancerStudyByStableId("study_tcga_pub");
         ArrayList<CellProfile> list = DaoCellProfile.getAllCellProfiles

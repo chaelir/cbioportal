@@ -32,9 +32,10 @@
 
 package org.mskcc.cbio.portal.util;
 
-import org.cbioportal.model.Cell;
+import org.cbioportal.model.*;
 import org.mskcc.cbio.portal.model.*;
-import org.mskcc.cbio.portal.repository.CellPanelRepositoryLegacy;
+
+//import org.mskcc.cbio.portal.repository.CellPanelRepositoryLegacy;
 
 import java.util.*;
 
@@ -68,6 +69,7 @@ public class CellProfileUtil {
      * @param profileList           List of Cell Profiles.
      * @return true or false.
      */
+    /* NOTE: disabled expression stuff
     public static boolean outlierExpressionSelected(HashSet<String> cellProfileIdSet,
             ArrayList<CellProfile> profileList) {
         Iterator<String> cellProfileIdIterator = cellProfileIdSet.iterator();
@@ -85,7 +87,9 @@ public class CellProfileUtil {
         }
         return false;
     }
+    */
     
+    /* NOTE: disabled cell Panel stuff
     public static int getCellPanelId(String panelId) {
         CellPanelRepositoryLegacy cellPanelRepositoryLegacy = (CellPanelRepositoryLegacy)SpringUtil.getApplicationContext().getBean("cellPanelRepositoryLegacy");  
         CellPanel cellPanel = cellPanelRepositoryLegacy.getCellPanelByStableId(panelId).get(0);
@@ -100,4 +104,5 @@ public class CellProfileUtil {
         }
         return false;
     }
+    */
 }
