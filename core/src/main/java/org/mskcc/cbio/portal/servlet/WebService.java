@@ -72,6 +72,13 @@ public class WebService extends HttpServlet {
     public static final String PROTEIN_ARRAY_TYPE = "protein_array_type";
     public static final String PROTEIN_ARRAY_ID = "protein_array_id";
     public static final String FORMAT = "format";
+    /* NOTE Hack */
+    public static final String CELL_PROFILE_ID = "cell_profile_id";
+    public static final String CELL_LIST = "cell_list";
+    public static final String UNIQUE_CELL_ID = "unique_cell_id";
+    public static final String UNIQUE_CELL_NAME = "unique_cell_name";
+    /* NOTE Hack */
+    
 
     // class which process access control to cancer studies
     private AccessControl accessControl;

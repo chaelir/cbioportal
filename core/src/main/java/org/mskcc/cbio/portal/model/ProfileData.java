@@ -48,11 +48,19 @@ public class ProfileData {
     private String[][] matrix;
     private GeneticProfile geneticProfile;
     
-    // primary store of profile's data:
-    private HashMap<String, String> mapFromGeneAndCaseToGeneProperties = new HashMap<String, String>();
+    /* NOTE: BEGIN OF HACK */
+    private CellProfile cellProfile;
+    /* NOTE: END OF HACK */
+    
+    // primary store of genetic profile's data:
+    /* NOTE: BEGIN OF HACK */
+    // apply to all profiles
+    //private HashMap<String, String> mapFromNameAndCaseToProfileProperties = new HashMap<String, String>();
+    private HashMap<String, String> mapFromNameAndCaseToProfileProperties = new HashMap<String, String>();
+    private ArrayList<String> nameList = new ArrayList<String>();
+    /* NOTE: END OF HACK */
     private ArrayList<String> caseIdList = new ArrayList<String>();
-    private ArrayList<String> geneList = new ArrayList<String>();
-
+    
     /**
      * Constructor.
      *
@@ -65,17 +73,31 @@ public class ProfileData {
         processMatrix();
     }
 
+    /* NOTE: BEGIN OF HACK */
+    /** 
+     * Constructor.
+     *
+     * @param cellProfile CellProfile Object.
+     * @param matrix         2D Matrix of Data
+     */
+    public ProfileData(CellProfile cellProfile, String[][] matrix) {
+        this.cellProfile = cellProfile;
+        this.matrix = matrix;
+        processMatrix();
+    }
+    /* NOTE: END OF HACK */
+
     /**
      * Constructor.
      *
      * @param hashMap    HashMap of Data.
-     * @param geneList   List of Genes.
+     * @param nameList   List of Names [ Cells or Genes ]
      * @param caseIdList List of Case Ids.
      */
     public ProfileData(HashMap<String, String> hashMap,
-                       ArrayList<String> geneList, ArrayList<String> caseIdList) {
-        this.mapFromGeneAndCaseToGeneProperties = hashMap;
-        this.geneList = geneList;
+                       ArrayList<String> nameList, ArrayList<String> caseIdList) {
+        this.mapFromNameAndCaseToProfileProperties = hashMap;
+        this.nameList = nameList;
         this.caseIdList = caseIdList;
     }
 
@@ -96,29 +118,40 @@ public class ProfileData {
     public GeneticProfile getGeneticProfile() {
         return geneticProfile;
     }
+    
+    /* NOTE: BEGIN OF HACK */
+    /**
+     * Gets the Cell Profile.
+     *
+     * @return Cell Profile Object.
+     */
+    public CellProfile getCellProfile() {
+        return cellProfile; 
+    }
+    /* NOTE: END OF HACK */
 
     /**
      * Gets the value of gene X in case Y.
      *
-     * @param geneSymbol Gene Symbol.
+     * @param nameSymbol Unique Name Symbol.
      * @param caseId     Case ID.
      * @return value.
      */
-    public String getValue(String geneSymbol, String caseId) {
-        String key = createKey(geneSymbol, caseId);
-        return mapFromGeneAndCaseToGeneProperties.get(key);
+    public String getValue(String nameSymbol, String caseId) {
+        String key = createKey(nameSymbol, caseId);
+        return mapFromNameAndCaseToProfileProperties.get(key);
     }
 
     /**
      * Gets the value of gene X in case Y.
      *
-     * @param geneSymbol Gene Symbol.
+     * @param nameSymbol Unique Name Symbol.
      * @param caseId     Case ID.
      * @return value.
      */
-    public ValueParser getValueParsed(String geneSymbol, String caseId, double zScoreThreshold) {
-        String key = createKey(geneSymbol, caseId);
-        String value = mapFromGeneAndCaseToGeneProperties.get(key);
+    public ValueParser getValueParsed(String nameSymbol, String caseId, double zScoreThreshold) {
+        String key = createKey(nameSymbol, caseId);
+        String value = mapFromNameAndCaseToProfileProperties.get(key);
         if (value != null) {
             return new ValueParser (value, zScoreThreshold);
         }
@@ -140,7 +173,16 @@ public class ProfileData {
      * @return ArrayList of Gene Symbols.
      */
     public ArrayList<String> getGeneList() {
-        return geneList;
+        return nameList;
+    }
+    
+    /**
+     * Gets list of cell symbols.
+     *
+     * @return ArrayList of Cell Symbols.
+     */
+    public ArrayList<String> getCellList() {
+        return nameList;
     }
 
     /**
@@ -158,8 +200,8 @@ public class ProfileData {
         //  Then, extract the gene list
         if (matrix.length > 0) {
             for (int rows = 1; rows < matrix.length; rows++) {
-                String geneSymbol = matrix[rows][1];
-                geneList.add(geneSymbol);
+                String nameSymbol = matrix[rows][1];
+                nameList.add(nameSymbol);
             }
         }
 
@@ -168,21 +210,21 @@ public class ProfileData {
             for (int cols = 2; cols < matrix[0].length; cols++) {
                 String value = matrix[rows][cols];
                 String caseId = matrix[0][cols];
-                String geneSymbol = matrix[rows][1];
-                String key = createKey(geneSymbol, caseId);
-                mapFromGeneAndCaseToGeneProperties.put(key, value);
+                String nameSymbol = matrix[rows][1];
+                String key = createKey(nameSymbol, caseId);
+                mapFromNameAndCaseToProfileProperties.put(key, value);
             }
         }
     }
 
     /**
-     * Create gene + case ID key.
+     * Create name + case ID key.
      *
-     * @param geneSymbol gene symbol.
+     * @param nameSymbol unique name symbol.
      * @param caseId     case ID.
      * @return hash key.
      */
-    private String createKey(String geneSymbol, String caseId) {
-        return geneSymbol + ":" + caseId;
+    private String createKey(String nameSymbol, String caseId) {
+        return nameSymbol + ":" + caseId;
     }
 }

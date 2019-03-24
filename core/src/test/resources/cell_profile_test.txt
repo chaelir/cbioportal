@@ -1,0 +1,9 @@
+cancer_study_identifier: study_tcga_pub
+cell_alteration_type: CELL_RELATIVE_ABUNDANCE
+datatype: CONTINUOUS
+data_filename: data_linear_CRA.txt
+stable_id: study_tcga_pub_linear_CRA_test
+show_profile_in_analysis_tab: false
+profile_description: this profile is in cell_profile_test.txt of resource not in IM_cell_profile
+profile_name: Test CiberSort
+target_line: Barry

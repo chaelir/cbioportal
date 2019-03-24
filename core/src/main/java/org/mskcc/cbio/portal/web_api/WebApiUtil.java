@@ -40,9 +40,13 @@ import org.mskcc.cbio.portal.dao.DaoException;
 import org.mskcc.cbio.portal.dao.DaoGeneOptimized;
 import org.mskcc.cbio.portal.model.Gene;
 import org.mskcc.cbio.portal.model.GeneticAlterationType;
+import org.mskcc.cbio.portal.dao.DaoCellOptimized;
+import org.mskcc.cbio.portal.model.Cell;
+import org.mskcc.cbio.portal.model.CellAlterationType;
 import org.mskcc.cbio.portal.model.MicroRna;
 import org.mskcc.cbio.portal.servlet.ServletXssUtil;
 import org.mskcc.cbio.portal.util.GeneComparator;
+import org.mskcc.cbio.portal.util.CellComparator;
 
 /**
  * Utility class for web api
@@ -52,6 +56,43 @@ public class WebApiUtil {
     private static HashSet <String> variantMicroRnaIdSet;
     public static final String TAB = "\t";
     public static final String NEW_LINE = "\n";
+    
+    /* NOTE hack */
+    public static List <Cell> getCellList (List<String> targetCellList,
+                                           CellAlterationType alterationType, StringBuffer warningBuffer,
+                                           List<String> warningList) throws DaoException {
+        DaoCellOptimized daoCell = DaoCellOptimized.getInstance();
+
+        ServletXssUtil xssUtil = null;
+
+        try {
+            xssUtil = ServletXssUtil.getInstance();
+        }
+        catch (Exception e) {
+        }
+
+        //  Iterate through all the genes specified by the client
+        //  Genes might be specified as Integers, e.g. Entrez Gene Ids or Strings, e.g. HUGO
+        //  Symbols or microRNA Ids or aliases.
+        List <Cell> cellList = new ArrayList<Cell>();
+        for (String cellId:  targetCellList) {
+            Cell cell = daoCell.getNonAmbiguousCell(cellId);
+            if (cell == null) {
+                //  If that fails, give up
+                if (xssUtil != null) {
+                    cellId = xssUtil.getCleanerInput(cellId);
+                }
+                String msg = "# Warning:  Unknown gene:  " + cellId;
+                warningBuffer.append(msg).append ("\n");
+                warningList.add(msg);
+            } else {
+                cellList.add(cell);
+            }
+        }
+        Collections.sort(cellList, new CellComparator());
+        return cellList;
+    }
+    /* NOTE hack */
 
     public static List <Gene> getGeneList (List<String> targetGeneList,
                     GeneticAlterationType alterationType, StringBuffer warningBuffer,
