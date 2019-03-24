@@ -284,16 +284,9 @@ public class TestImportCellProfileData {
         //System.err.println(DaoCellProfile.getCellProfileByStableId("linear_CRA_test").getCellProfileId());
         String sample = "TCGA-A1-A0SD-01";
         int sampleId = DaoSample.getSampleByCancerStudyAndSampleId(studyId, sample).getInternalId();
-        assertEquals(2, sampleId);
-        // Test the profile is inserted in IM_cell_profile
         int cellProfileId = DaoCellProfile.getCellProfileByStableId("study_tcga_pub_linear_CRA_import").getCellProfileId();
-        assertEquals(3, cellProfileId);
-        // Test the profile is inserted in IM_cell_alteration
         HashMap<Integer, String> valueMap = DaoCellAlteration.getInstance().getCellAlterationMap(cellProfileId, 5);
-        /*
-        for (int i : valueMap.keySet()) {
-            System.err.println("key: " + i + " value: " + valueMap.get(i));
-        }*/
+        // Test the profile is inserted IM_cell_alteration
         assertEquals("0.04330", valueMap.get(sampleId));
         // Test the profile is inserted in IM_sample_cell_profile
         assertEquals(cellProfileId, DaoSampleCellProfile.getCellProfileIdForSample(sampleId));
