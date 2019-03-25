@@ -237,7 +237,9 @@ public class CellProfileReader {
         String stableId = parseStableId(properties, "stable_id");
         String profileName = properties.getProperty("profile_name");
         String profileDescription = properties.getProperty("profile_description");
-        String cellAlterationTypeString = properties.getProperty("cell_alteration_type");
+        // NOTE: this terminology is techinically wrong
+        // BUT will keep it this way to ease coding. see cbioportal_common.py
+        String cellAlterationTypeString = properties.getProperty("genetic_alteration_type");
         String datatype = properties.getProperty("datatype");
         if (profileName == null) {
             profileName = cellAlterationTypeString;
