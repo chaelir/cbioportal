@@ -94,7 +94,7 @@ VALIDATOR_IDS = {
     cbioportal_common.MetaFileTypes.GSVA_PVALUES:'GsvaPvalueValidator',
     ###### BEGIN HACK
     cbioportal_common.MetaFileTypes.CRA_CONTINUOUS:'CRAContinuousValuesValidator',
-    cbioportal_common.MetaFileTypes.MRA_CONTINUOUS:'MRAContinuousValuesValidator',
+    #cbioportal_common.MetaFileTypes.MRA_CONTINUOUS:'MRAContinuousValuesValidator',
     ###### END
 }
 
@@ -1075,43 +1075,43 @@ class CNAContinuousValuesValidator(CNAValidator, ContinuousValuesValidator):
  
 ###### BEGIN HACK
 
-class MicrobeAbundanceValidator(FeaturewiseFileValidator):
-
-    """FeatureWiseValidator that has  id as feature columns."""
-
-    REQUIRED_HEADERS = ['NCBI_Taxonomy_ID']
-    OPTIONAL_HEADERS = ['NCBI_Taxonomy_Name']
-    ALLOW_BLANKS = True
-    NULL_VALUES = ["NA"]
-
-    def checkHeader(self, cols):
-        """Validate the header and read sample IDs from it.
-
-        Return the number of fatal errors.
-        """
-        num_errors = super(GenewiseFileValidator, self).checkHeader(cols)
-        # see if at least one of the gene identifiers is in the right place
-
-        if ('NCBI_Taxonomy_ID' not in self.sampleIds):
-            self.logger.error('NCBI_Taxonomy_ID need to be placed before the '
-                              'sample ID columns of the file and in exact case.',
-                              extra={'line_number': self.line_number})
-            num_errors += 1
-        return num_errors
-        
-    def parseFeatureColumns(self, nonsample_col_vals):
-        """Nothing to check for non smaple columns."""
-        return None
-
-class MRAContinuousValuesValidator(MicrobeAbundanceValidator, ContinuousValuesValidator):
-    """Logic to validate continuous CNA data."""
+#class MicrobeAbundanceValidator(FeaturewiseFileValidator):
+#
+#    """FeatureWiseValidator that has  id as feature columns."""
+#
+#    REQUIRED_HEADERS = ['NCBI_Taxonomy_ID']
+#    OPTIONAL_HEADERS = ['NCBI_Taxonomy_Name']
+#    ALLOW_BLANKS = True
+#    NULL_VALUES = ["NA"]
+#
+#    def checkHeader(self, cols):
+#        """Validate the header and read sample IDs from it.
+#
+#        Return the number of fatal errors.
+#        """
+#        num_errors = super(GenewiseFileValidator, self).checkHeader(cols)
+#        # see if at least one of the gene identifiers is in the right place
+#
+#        if ('NCBI_Taxonomy_ID' not in self.sampleIds):
+#            self.logger.error('NCBI_Taxonomy_ID need to be placed before the '
+#                              'sample ID columns of the file and in exact case.',
+#                              extra={'line_number': self.line_number})
+#            num_errors += 1
+#        return num_errors
+#        
+#    def parseFeatureColumns(self, nonsample_col_vals):
+#        """Nothing to check for non smaple columns."""
+#        return None
+#
+#class MRAContinuousValuesValidator(MicrobeAbundanceValidator, ContinuousValuesValidator):
+#    """Logic to validate continuous CNA data."""
 
 class CellAbundanceValidator(FeaturewiseFileValidator):
 
     """FeatureWiseValidator that has gene symbol and/or Entrez gene id as feature columns."""
 
-    REQUIRED_HEADERS = ['Unique_Cell_ID']
-    OPTIONAL_HEADERS = ['Unique_Cell_Name']
+    REQUIRED_HEADERS = ['UNIQUE_CELL_ID']
+    OPTIONAL_HEADERS = ['UNIQUE_CELL_NAME']
     ALLOW_BLANKS = True
     NULL_VALUES = ["NA"]
 
@@ -1123,11 +1123,6 @@ class CellAbundanceValidator(FeaturewiseFileValidator):
         num_errors = super(GenewiseFileValidator, self).checkHeader(cols)
         # see if at least one of the gene identifiers is in the right place
 
-        if ('Unique_Cell_ID' not in self.sampleIds):
-            self.logger.error('Unique_Cell_ID needs to be placed before the '
-                              'sample ID columns of the file and in exact case.',
-                              extra={'line_number': self.line_number})
-            num_errors += 1
         return num_errors
         
     def parseFeatureColumns(self, nonsample_col_vals):

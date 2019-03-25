@@ -61,7 +61,7 @@ class MetaFileTypes(object):
     GSVA_PVALUES = 'meta_gsva_pvalues'
     ###### BEGIN OF HACK
     ###### add in microbe and cell relative abundance meta data type  
-    MRA_CONTINUOUS = 'meta_mra'
+    #MRA_CONTINUOUS = 'meta_mra'
     CRA_CONTINUOUS = 'meta_cra'
     ###### END
 
@@ -253,17 +253,17 @@ META_FIELD_MAP = {
     },
     ###### BEGIN OF HACK
     ###### add in microbe and cell relative abundance meta data type  
-    MetaFileTypes.MRA_CONTINUOUS: {
-        'cancer_study_identifier': True,
-        'genetic_alteration_type': True,
-        'datatype': True,
-        'stable_id': True,
-        'show_profile_in_analysis_tab': True,
-        'profile_name': True,
-        'profile_description': True,
-        'data_filename': True,
-        'gene_panel': False
-    },
+    #MetaFileTypes.MRA_CONTINUOUS: {
+    #    'cancer_study_identifier': True,
+    #    'genetic_alteration_type': True,
+    #    'datatype': True,
+    #    'stable_id': True,
+    #    'show_profile_in_analysis_tab': True,
+    #    'profile_name': True,
+    #    'profile_description': True,
+    #    'data_filename': True,
+    #    'gene_panel': False
+    #},
     MetaFileTypes.CRA_CONTINUOUS: {
         'cancer_study_identifier': True,
         'genetic_alteration_type': True,
@@ -301,7 +301,7 @@ IMPORTER_CLASSNAME_BY_META_TYPE = {
     MetaFileTypes.GSVA_PVALUES: "org.mskcc.cbio.portal.scripts.ImportProfileData",
     ###### BEGIN OF HACK
     ###### add in microbe and cell relative abundance meta data type 
-    MetaFileTypes.MRA_CONTINUOUS: "org.mskcc.cbio.portal.scripts.ImportMicrobeProfileData",
+    #MetaFileTypes.MRA_CONTINUOUS: "org.mskcc.cbio.portal.scripts.ImportMicrobeProfileData",
     MetaFileTypes.CRA_CONTINUOUS: "org.mskcc.cbio.portal.scripts.ImportCellProfileData",
     ###### END
 }
@@ -311,6 +311,9 @@ IMPORTER_REQUIRES_METADATA = {
     "org.mskcc.cbio.portal.scripts.ImportCopyNumberSegmentData" : True,
     "org.mskcc.cbio.portal.scripts.ImportGisticData" : False,
     "org.mskcc.cbio.portal.scripts.ImportMutSigData" : False,
+    ###### BEGIN OF HACK
+    MetaFileTypes.CRA_CONTINUOUS: "org.mskcc.cbio.portal.scripts.ImportCellProfileData",
+    ###### END
     "org.mskcc.cbio.portal.scripts.ImportProfileData" : True,
     "org.mskcc.cbio.portal.scripts.ImportTimelineData" : True,
     "org.mskcc.cbio.portal.scripts.ImportGenePanelProfileMap" : False
@@ -566,7 +569,7 @@ def get_meta_file_type(meta_dictionary, logger, filename):
         ("GENESET_SCORE", "P-VALUE"): MetaFileTypes.GSVA_PVALUES,
         ###### BEGIN OF HACK
         ###### add in microbe and cell relative abundance meta data type
-        ("MICROBE_RELATIVE_ABUNDANCE", "CONTINUOUS"): MetaFileTypes.MRA_CONTINUOUS,
+        #("MICROBE_RELATIVE_ABUNDANCE", "CONTINUOUS"): MetaFileTypes.MRA_CONTINUOUS,
         ("CELL_RELATIVE_ABUNDANCE", "CONTINUOUS"): MetaFileTypes.CRA_CONTINUOUS
         ###### END
     }
