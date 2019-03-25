@@ -138,7 +138,7 @@ public final class DaoSampleCellProfile {
         }
     }
 
-    public static int getCellProfileIdForSample(int sampleId) throws DaoException {
+    public static List<Integer> getCellProfileIdForSample(int sampleId) throws DaoException {
         // TODO: this seems not correct 
         //   a sample could have multiple cell profiles however this only returns the first one
         Connection con = null;
@@ -149,12 +149,13 @@ public final class DaoSampleCellProfile {
             con = JdbcUtil.getDbConnection(DaoSampleCellProfile.class);
             pstmt = con.prepareStatement("SELECT CELL_PROFILE_ID FROM IM_sample_cell_profile WHERE SAMPLE_ID = ?");
             pstmt.setInt(1, sampleId);
+            List pfList = new ArrayList<Integer>();
             rs = pstmt.executeQuery();
-            if( rs.next() ) {
-               return rs.getInt("CELL_PROFILE_ID");
-            }else{
-               return NO_SUCH_PROFILE_ID;
+            while( rs.next() ){
+               pfList.add(rs.getInt("CELL_PROFILE_ID"));
             }
+            for(int i=0;i<pfList.size();i++){ System.err.println(pfList.get(i)); }
+            return pfList;
         } catch (NullPointerException e) {
             throw new DaoException(e);
         } catch (SQLException e) {

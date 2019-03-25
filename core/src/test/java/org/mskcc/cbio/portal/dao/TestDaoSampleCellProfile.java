@@ -44,6 +44,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 
 import static org.junit.Assert.*;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
 /**
  * JUnit test for DaoSample class
@@ -86,7 +87,7 @@ public class TestDaoSampleCellProfile {
         boolean exists = DaoSampleCellProfile.sampleExistsInCellProfile(sample.getInternalId(), cellProfileId);
         assertTrue(exists);
 
-        assertEquals(cellProfileId, DaoSampleCellProfile.getCellProfileIdForSample(sample.getInternalId()));
+        assertThat(DaoSampleCellProfile.getCellProfileIdForSample(sample.getInternalId()), contains(cellProfileId));
 
         sample = DaoSample.getSampleByPatientAndSampleId(patient.getInternalId(), "TCGA-09876-01");
         num = DaoSampleCellProfile.addSampleCellProfile(sample.getInternalId(), cellProfileId, null);

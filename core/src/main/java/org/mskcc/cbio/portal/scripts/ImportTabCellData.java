@@ -171,7 +171,7 @@ public class ImportTabCellData {
                         throw new RuntimeException("Unknown sample id '" + StableIdUtil.getSampleId(sampleIds[i]) + "' found in tab-delimited file: " + this.dataFile.getCanonicalPath());
                     }
                 }
-                ImportDataUtil.addSampleProfile(sample, cellProfileId, cellPanelID);
+                ImportDataUtil.addSampleCellProfile(sample, cellProfileId, cellPanelID);
                 orderedSampleList.add(sample.getInternalId());
             }
             

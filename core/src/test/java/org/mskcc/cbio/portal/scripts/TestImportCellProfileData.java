@@ -28,6 +28,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,6 +57,10 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.transaction.TransactionConfiguration;
 import org.springframework.transaction.annotation.Transactional;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Pieter Lukasse pieter@thehyve.nl
@@ -284,14 +289,21 @@ public class TestImportCellProfileData {
         //System.err.println(DaoCellProfile.getCellProfileByStableId("linear_CRA_test").getCellProfileId());
         String sample = "TCGA-A1-A0SD-01";
         int sampleId = DaoSample.getSampleByCancerStudyAndSampleId(studyId, sample).getInternalId();
+        assertEquals(2, sampleId);
         int cellProfileId = DaoCellProfile.getCellProfileByStableId("study_tcga_pub_linear_CRA_import").getCellProfileId();
-        HashMap<Integer, String> valueMap = DaoCellAlteration.getInstance().getCellAlterationMap(cellProfileId, 5);
         // Test the profile is inserted IM_cell_alteration
+        HashMap<Integer, String> valueMap = DaoCellAlteration.getInstance().getCellAlterationMap(cellProfileId, 5);
         assertEquals("0.04330", valueMap.get(sampleId));
-        // Test the profile is inserted in IM_sample_cell_profile
-        assertEquals(cellProfileId, DaoSampleCellProfile.getCellProfileIdForSample(sampleId));
         // Test the profile is inserted in IM_cell_profile_samples
-        assertEquals("1,2,3,4,5,6,", DaoCellProfileSamples.getOrderedSampleList(cellProfileId));
+        assertEquals(6, DaoCellProfileSamples.getOrderedSampleList(cellProfileId).size()); // 6 samples inserted
+        // Test the profile is inserted in IM_sample_cell_profile
+        System.err.println("trueCellProfileId=" + cellProfileId);
+        System.err.println("getCellProfileId=");
+        assertThat(DaoSampleCellProfile.getCellProfileIdForSample(sampleId), hasItems(cellProfileId));
+        // NOTE: there was a bug here because cellProfileId was not added to IM_sample_cell_profile
+        //       the bug was an easy mistake pattern that confuses
+        //       ImportDataUtil.addSampleProfile with ImportDataUtil.addSampleCellProfile   
+        //       which reports no error ( interestingly ).
         /* NOTE: obsolete, no longer needed, this test does not introduce new samples to test data
         String[] sampleIds = {"TCGA-02-0001-01","TCGA-02-0003-01","TCGA-02-0004-01","TCGA-02-0006-01"};
         List<Integer> sampleInternalIds = new ArrayList<Integer>();

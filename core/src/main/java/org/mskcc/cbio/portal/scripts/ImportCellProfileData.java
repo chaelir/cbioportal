@@ -121,7 +121,7 @@ public class ImportCellProfileData extends ConsoleRunnable {
      * @param args  the arguments given on the command line
      */
     public static void main(String[] args) {
-        ConsoleRunnable runner = new ImportProfileData(args);
+        ConsoleRunnable runner = new ImportCellProfileData(args);
         runner.runInConsole();
     }
 }
