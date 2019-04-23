@@ -67,9 +67,6 @@ skin.right_nav.show_whats_new=true
 # settings controlling what to show in the right navigation bar
 skin.study_view.link_text=To build your own case set, try out our enhanced Study View.
 
-# authentication
-## is authorization enabled at all? (true, false)
-authorization=false
 ## enable and set this property to specify a study group to be used to identify public studies for which no specific authorization entries are needed in the `authorities` table
 # always_show_study_group=
 
@@ -204,12 +201,13 @@ ucsc.build=hg19
 oncoprint.defaultview=patient
 
 # OncoPrint driver mutation annotations
-# oncoprint.custom_driver_annotation.binary.menu_label=Custom driver annotation
-# oncoprint.custom_driver_annotation.tiers.menu_label=Custom driver tiers
-# oncoprint.custom_driver_annotation.default=true
-# oncoprint.custom_driver_tiers_annotation.default=true
-# oncoprint.oncokb_hotspots.default=custom
-# oncoprint.hide_vus.default=false
+#   oncoprint.custom_driver_annotation.binary.menu_label=Custom driver annotation
+#   oncoprint.custom_driver_annotation.tiers.menu_label=Custom driver tiers
+#   oncoprint.custom_driver_annotation.binary.default=true
+#   oncoprint.custom_driver_annotation.tiers.default=true
+  oncoprint.oncokb.default=true
+  oncoprint.hotspots.default=true
+#  oncoprint.hide_vus.default=true
 
 # Custom gene sets
 # querypage.setsofgenes.location=file:/<path>

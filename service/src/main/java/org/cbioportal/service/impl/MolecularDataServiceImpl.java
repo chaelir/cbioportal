@@ -125,7 +125,7 @@ public class MolecularDataServiceImpl implements MolecularDataService {
     public List<GeneMolecularAlteration> getMolecularAlterations(String molecularProfileId, 
                                                                  List<Integer> entrezGeneIds, String projection)
         throws MolecularProfileNotFoundException {
-        
+
         validateMolecularProfile(molecularProfileId);
         return molecularDataRepository.getGeneMolecularAlterations(molecularProfileId, entrezGeneIds, projection);
     }
@@ -218,7 +218,7 @@ public class MolecularDataServiceImpl implements MolecularDataService {
 	}
 
     @Override
-    @PreAuthorize("hasPermission(#molecularProfileIds, 'List<MolecularProfileId>', 'read')")
+    @PreAuthorize("hasPermission(#molecularProfileIds, 'Collection<MolecularProfileId>', 'read')")
 	public BaseMeta getMetaMolecularDataInMultipleMolecularProfiles(List<String> molecularProfileIds,
 			List<String> sampleIds, List<Integer> entrezGeneIds) {
                 
