@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.cbioportal.model.ClinicalData;
+import org.cbioportal.model.ClinicalDataCountItem.ClinicalDataType;
 import org.cbioportal.service.exception.PatientNotFoundException;
 import org.cbioportal.service.exception.SampleNotFoundException;
 import org.cbioportal.service.exception.StudyNotFoundException;
@@ -12,7 +13,6 @@ import org.cbioportal.web.parameter.ClinicalDataIdentifier;
 import org.cbioportal.service.ClinicalDataService;
 import org.cbioportal.web.parameter.ClinicalDataMultiStudyFilter;
 import org.cbioportal.web.parameter.ClinicalDataSingleStudyFilter;
-import org.cbioportal.web.parameter.ClinicalDataType;
 import org.cbioportal.web.parameter.Direction;
 import org.cbioportal.web.parameter.HeaderKeyConstants;
 import org.cbioportal.web.parameter.PagingConstants;
@@ -41,7 +41,7 @@ import java.util.List;
 @PublicApi
 @RestController
 @Validated
-@Api(tags = "Clinical Data", description = " ")
+@Api(tags = "G. Clinical Data", description = " ")
 public class ClinicalDataController {
 
     public static final int CLINICAL_DATA_MAX_PAGE_SIZE = 10000000;

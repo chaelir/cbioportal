@@ -137,7 +137,7 @@ class CancerStudyPermissionEvaluator implements PermissionEvaluator {
     }
 
     private void populateCancerStudyMap() {
-        for (CancerStudy cs : studyRepository.getAllStudies("SUMMARY",
+        for (CancerStudy cs : studyRepository.getAllStudies(null, "SUMMARY",
                                                                                       PagingConstants.MAX_PAGE_SIZE,
                                                                                       PagingConstants.MIN_PAGE_NUMBER,
                                                                                       null,
@@ -216,8 +216,8 @@ class CancerStudyPermissionEvaluator implements PermissionEvaluator {
         else if ("List<MolecularProfileId>".equals(targetType) || "List<GeneticProfileId>".equals(targetType)) {
             return hasAccessToMolecularProfiles(authentication, (List<String>)targetId, permission);
         }
-        else if ("ClinicalAttributeFilter".equals(targetType)) {
-            return hasAccessToCancerStudies(authentication, (ClinicalAttributeFilter)targetId, permission);
+        else if ("ClinicalAttributeCountFilter".equals(targetType)) {
+            return hasAccessToCancerStudies(authentication, (ClinicalAttributeCountFilter)targetId, permission);
         }
         else if ("ClinicalDataMultiStudyFilter".equals(targetType)) {
             return hasAccessToCancerStudies(authentication, (ClinicalDataMultiStudyFilter)targetId, permission);
@@ -258,6 +258,15 @@ class CancerStudyPermissionEvaluator implements PermissionEvaluator {
         }
         else if ("SampleFilter".equals(targetType)) {
             return hasAccessToCancerStudies(authentication, (SampleFilter)targetId, permission);
+        }
+        else if ("ClinicalDataCountFilter".equals(targetType)) {
+            return hasAccessToCancerStudiesByClinicalDataCountFilter(authentication, (ClinicalDataCountFilter) targetId, permission);
+        }
+        else if ("ClinicalDataBinCountFilter".equals(targetType)) {
+            return hasAccessToCancerStudiesByClinicalDataBinCountFilter(authentication, (ClinicalDataBinCountFilter) targetId, permission);
+        }
+        else if ("StudyViewFilter".equals(targetType)) {
+            return hasAccessToCancerStudiesByStudyViewFilter(authentication, (StudyViewFilter) targetId, permission);
         }
         else if ("List<SampleIdentifier>".equals(targetType)) {
             return hasAccessToCancerStudiesBySampleIdentifier(authentication, (List<SampleIdentifier>)targetId, permission);
@@ -304,6 +313,12 @@ class CancerStudyPermissionEvaluator implements PermissionEvaluator {
                 // cancer study was not included so get it
                 cancerStudy = cancerStudies.get(((SampleList) targetDomainObject).getCancerStudyIdentifier());
             }
+        } else if (targetDomainObject instanceof Patient) {
+            cancerStudy = ((Patient) targetDomainObject).getCancerStudy();
+            if (cancerStudy == null) {
+                // cancer study was not included so get it
+                cancerStudy = cancerStudies.get(((Patient) targetDomainObject).getCancerStudyIdentifier());
+            }
         } else { 
             if (log.isDebugEnabled()) {
                 log.debug("hasPermission(), targetDomainObject class is '" + targetDomainObject.getClass().getName() + "'");
@@ -335,9 +350,9 @@ class CancerStudyPermissionEvaluator implements PermissionEvaluator {
         }
     }
 
-    private boolean hasAccessToCancerStudies(Authentication authentication, ClinicalAttributeFilter clinicalAttributeFilter, Object permission)
+    private boolean hasAccessToCancerStudies(Authentication authentication, ClinicalAttributeCountFilter clinicalAttributeCountFilter, Object permission)
     {
-        String sampleListId = clinicalAttributeFilter.getSampleListId();
+        String sampleListId = clinicalAttributeCountFilter.getSampleListId();
         if (sampleListId != null) {
             SampleList sampleList = sampleLists.get(sampleListId);
             if (sampleList == null || !hasPermission(authentication, sampleList, permission)) {
@@ -348,7 +363,7 @@ class CancerStudyPermissionEvaluator implements PermissionEvaluator {
         else {
             // use hashset as this list can be populated with many duplicate values
             Set<String> studyIds = new HashSet<String>();
-            for (SampleIdentifier identifier : clinicalAttributeFilter.getSampleIdentifiers()) {
+            for (SampleIdentifier identifier : clinicalAttributeCountFilter.getSampleIdentifiers()) {
                 studyIds.add(identifier.getStudyId());
             }
             return hasAccessToCancerStudies(authentication, studyIds, permission);
@@ -449,7 +464,34 @@ class CancerStudyPermissionEvaluator implements PermissionEvaluator {
         }
         return true;
     }
-     
+    
+    private boolean hasAccessToCancerStudiesByClinicalDataCountFilter(Authentication authentication,
+            ClinicalDataCountFilter clinicalDataCountFilter, Object permission) {
+        if (clinicalDataCountFilter.getStudyViewFilter() != null) {
+            return hasAccessToCancerStudiesByStudyViewFilter(authentication,
+                    clinicalDataCountFilter.getStudyViewFilter(), permission);
+        }
+        return true;
+    }
+
+    private boolean hasAccessToCancerStudiesByClinicalDataBinCountFilter(Authentication authentication,
+            ClinicalDataBinCountFilter clinicalDataBinCountFilter, Object permission) {
+        if (clinicalDataBinCountFilter.getStudyViewFilter() != null) {
+            return hasAccessToCancerStudiesByStudyViewFilter(authentication,
+                    clinicalDataBinCountFilter.getStudyViewFilter(), permission);
+        }
+        return true;
+    }
+
+    private boolean hasAccessToCancerStudiesByStudyViewFilter(Authentication authentication,
+            StudyViewFilter studyViewFilter, Object permission) {
+        if (studyViewFilter.getSampleIdentifiers() != null && !studyViewFilter.getSampleIdentifiers().isEmpty()) {
+            return hasAccessToCancerStudiesBySampleIdentifier(authentication, studyViewFilter.getSampleIdentifiers(),
+                    permission);
+        }
+        return hasAccessToCancerStudies(authentication, studyViewFilter.getStudyIds(), permission);
+    }
+    
     /**
      * Helper function to determine if given user has access to given cancer study.
      *

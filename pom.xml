@@ -6,7 +6,9 @@
   <artifactId>master</artifactId>
   <packaging>pom</packaging>
   <name>Portal Master</name>
-  <version>1.17.1</version>
+  <!-- project version is generated through git or can be passed as
+	   PROJECT_VERSION env variable (see version.sh) -->
+  <version>0-unknown-version-SNAPSHOT</version>
   <description>master maven module</description>
 
   <scm>
@@ -23,6 +25,12 @@
       </snapshots>
     </repository>
   </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </pluginRepository>
+  </pluginRepositories>
 
   <profiles>
     <profile>
@@ -174,6 +182,17 @@
     <build>
     <plugins>
           <plugin>
+            <groupId>com.github.cbioportal.maven-external-version</groupId>
+            <artifactId>maven-external-version-plugin</artifactId>
+            <version>f09c2b9608744881111f24e55d55a91e54e6cb5f</version>
+            <extensions>true</extensions>
+            <configuration>
+              <strategy hint="script">
+                <script>./version.sh</script>
+              </strategy>
+            </configuration>
+          </plugin>
+          <plugin>
             <groupId>org.jacoco</groupId>
             <artifactId>jacoco-maven-plugin</artifactId>
              <version>${jacoco-maven-plugin.version}</version>
@@ -271,6 +290,25 @@
               </dependency>
             </dependencies>
           </plugin>
+          <!-- Generate test DB schema without key `UQ_MUTATION_EVENT_DETAILS` to accommodate H2 MySQL driver not supporting partial indexes -->
+          <plugin>
+            <artifactId>exec-maven-plugin</artifactId>
+            <groupId>org.codehaus.mojo</groupId>
+            <version>1.6.0</version>
+            <inherited>false</inherited>
+            <executions>
+              <execution>
+                <id>Generate Test DB schema</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>exec</goal>
+                </goals>
+                <configuration>
+                  <executable>${basedir}/db-scripts/src/main/resources/gen-cgds-test-schema.sh</executable>
+                </configuration>
+              </execution>
+            </executions>
+        </plugin>
           <plugin>
             <groupId>pl.project13.maven</groupId>
             <artifactId>git-commit-id-plugin</artifactId>
@@ -295,6 +333,9 @@
                 </executions>
             <configuration>
                 <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                <gitDescribe>
+                    <tags>true</tags>
+                </gitDescribe>
             </configuration>
           </plugin>
     </plugins>
@@ -384,7 +425,7 @@
     <jacoco-maven-plugin.version>0.7.6.201602180812</jacoco-maven-plugin.version>
     <mockito.version>1.10.19</mockito.version>
 
-    <final.war.name>cbioportal-${project.version}</final.war.name>
+    <final.war.name>cbioportal</final.war.name>
 
   <db.test.driver>com.mysql.jdbc.Driver</db.test.driver>
     <!-- For MySQL < 5.5 change 'default_storage_engine' to 'storage_engine' -->
@@ -397,7 +438,7 @@
     <tomcat.session.timeout>720</tomcat.session.timeout>
 
     <!-- THIS SHOULD BE KEPT IN SYNC TO VERSION IN CGDS.SQL -->
-    <db.version>2.7.2</db.version>
+    <db.version>2.8.2</db.version>
   </properties>
 
   <modules>
@@ -441,7 +482,7 @@
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
-      <version>4.3.4</version>
+      <version>4.3.6</version>
     </dependency>
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>

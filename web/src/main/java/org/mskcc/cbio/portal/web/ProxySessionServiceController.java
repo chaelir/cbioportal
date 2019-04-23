@@ -1,6 +1,7 @@
 package org.mskcc.cbio.portal.web;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -12,12 +13,14 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
+import org.cbioportal.web.parameter.VirtualStudy;
+import org.cbioportal.web.parameter.VirtualStudyData;
 import org.json.simple.JSONObject;
-import org.mskcc.cbio.portal.model.virtualstudy.VirtualStudy;
-import org.mskcc.cbio.portal.model.virtualstudy.VirtualStudyData;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -44,6 +47,12 @@ public class ProxySessionServiceController {
 
     @Value("${session.service.url:}")
     private String sessionServiceURL;
+
+    @Value("${session.service.user:}")
+    private String sessionServiceUser;
+
+    @Value("${session.service.password:}")
+    private String sessionServicePassword;
     
     
     @RequestMapping(value = "/{type}/{id}", method = RequestMethod.GET)
@@ -55,12 +64,14 @@ public class ProxySessionServiceController {
         try {
             RestTemplate restTemplate = new RestTemplate();
 
+            // add basic authentication in header
+            HttpEntity<String> headers = new HttpEntity<String>(getHttpHeaders());
             ResponseEntity<HashMap> responseEntity = restTemplate.exchange(sessionServiceURL + type + "/" + id,
-                                                                           HttpMethod.GET,
-                                                                           null,
-                                                                           HashMap.class);
+                                                                        HttpMethod.GET,
+                                                                        headers,
+                                                                        HashMap.class);
             
-            if(type.equals(SessionType.virtual_study)) {
+            if (type.equals(SessionType.virtual_study)) {
                 ObjectMapper mapper = new ObjectMapper()
                         .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
                 
@@ -75,6 +86,22 @@ public class ProxySessionServiceController {
         }
         return null;
     }
+
+    public Boolean isBasicAuthEnabled() {
+        return sessionServiceUser != null && !sessionServiceUser.equals("") && sessionServicePassword != null && !sessionServicePassword.equals("");
+    }
+
+    public HttpHeaders getHttpHeaders() {
+        return new HttpHeaders() {{
+            if (isBasicAuthEnabled()) {
+                String auth = sessionServiceUser + ":" + sessionServicePassword;
+                byte[] encodedAuth = Base64.encodeBase64(auth.getBytes(Charset.forName("US-ASCII")));
+                String authHeader = "Basic " + new String(encodedAuth);
+                set( "Authorization", authHeader);
+            }
+            set( "Content-Type", "application/json");
+        }};
+     }
     
     @RequestMapping(value = "/virtual_study", method = RequestMethod.GET)
     public @ResponseBody List<VirtualStudy> getUserStudies() {
@@ -82,9 +109,12 @@ public class ProxySessionServiceController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (!StringUtils.isEmpty(sessionServiceURL) && authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
             RestTemplate restTemplate = new RestTemplate();
-            ResponseEntity<VirtualStudy[]> responseEntity = restTemplate.getForEntity(
+            HttpEntity<Object> headers = new HttpEntity<Object>(getHttpHeaders());
+            ResponseEntity<VirtualStudy[]> responseEntity = restTemplate.exchange(
                     sessionServiceURL + "virtual_study/query?field=data.users&value=" + 
                     ((UserDetails)authentication.getPrincipal()).getUsername(),
+                    HttpMethod.GET,
+                    headers,
                     VirtualStudy[].class);
             virtualStudies = Arrays.asList(responseEntity.getBody());
         }
@@ -114,7 +144,7 @@ public class ProxySessionServiceController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         if (!StringUtils.isEmpty(sessionServiceURL) && authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
-                updateVirutalStudyUser(id,
+                updateVirtualStudyUser(id,
                                        ((UserDetails)authentication.getPrincipal()).getUsername(),
                                        Operation.add,
                                        response);
@@ -131,7 +161,7 @@ public class ProxySessionServiceController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         
         if (!StringUtils.isEmpty(sessionServiceURL) && authentication != null && !(authentication instanceof AnonymousAuthenticationToken)) {
-            updateVirutalStudyUser(id,
+            updateVirtualStudyUser(id,
                                    ((UserDetails)authentication.getPrincipal()).getUsername(),
                                    Operation.delete,
                                    response);
@@ -145,7 +175,7 @@ public class ProxySessionServiceController {
                            Optional<SessionOperation> operation,
                            JSONObject body) throws IOException, JsonParseException, JsonMappingException {
         
-        HttpEntity httpEntity = new HttpEntity<JSONObject>(body);
+        HttpEntity httpEntity = null;
         if (type.equals(SessionType.virtual_study)) {
             ObjectMapper mapper = new ObjectMapper();
             // JSON from file to Object
@@ -160,22 +190,24 @@ public class ProxySessionServiceController {
                     virtualStudyData.setUsers(Collections.singleton(userName));
                 }
             }
-            httpEntity = new HttpEntity<VirtualStudyData>(virtualStudyData);
+
+            // use basic authentication for session service if set
+            httpEntity = new HttpEntity<VirtualStudyData>(virtualStudyData, getHttpHeaders());
+        } else {
+            httpEntity = new HttpEntity<JSONObject>(body, getHttpHeaders());
         }
         // returns {"id":"5799648eef86c0e807a2e965"}
         // using HashMap because converter is MappingJackson2HttpMessageConverter
         // (Jackson 2 is on classpath)
         // was String when default converter StringHttpMessageConverter was used
         RestTemplate restTemplate = new RestTemplate();
-
-        ResponseEntity<HashMap> responseEntity = restTemplate.exchange(sessionServiceURL + type, HttpMethod.POST, httpEntity,
-                HashMap.class);
+        ResponseEntity<HashMap> responseEntity = restTemplate.exchange(sessionServiceURL + type, HttpMethod.POST, httpEntity, HashMap.class);
 
         return responseEntity.getBody();
     }
     
     
-    private void updateVirutalStudyUser(String              id,
+    private void updateVirtualStudyUser(String              id,
                                         String              user,
                                         Operation           operation,
                                         HttpServletResponse response) throws IOException {
@@ -198,7 +230,10 @@ public class ProxySessionServiceController {
                 }
             }
             virtualStudy.getData().setUsers(users);
-            new RestTemplate().put(sessionServiceURL + SessionType.virtual_study + "/" + id, virtualStudy.getData());
+            RestTemplate restTemplate = new RestTemplate();
+            HttpEntity<Object> httpEntity = new HttpEntity<Object>(virtualStudy.getData(), getHttpHeaders());
+
+            restTemplate.exchange(sessionServiceURL + SessionType.virtual_study + "/" + id, HttpMethod.PUT, httpEntity, HashMap.class);
 
         } catch (Exception e) {
             e.printStackTrace();

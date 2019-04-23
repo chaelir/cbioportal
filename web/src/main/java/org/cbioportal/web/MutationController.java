@@ -4,6 +4,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.swagger.annotations.ApiParam;
@@ -46,7 +47,7 @@ import javax.validation.constraints.Size;
 @PublicApi
 @RestController
 @Validated
-@Api(tags = "Mutations", description = " ")
+@Api(tags = "K. Mutations", description = " ")
 public class MutationController {
 
     public static final int MUTATION_MAX_PAGE_SIZE = 10000000;
@@ -66,6 +67,8 @@ public class MutationController {
         @PathVariable String molecularProfileId,
         @ApiParam(required = true, value = "Sample List ID e.g. acc_tcga_all")
         @RequestParam String sampleListId,
+        @ApiParam("Entrez Gene ID")
+        @RequestParam(required = false) Integer entrezGeneId,
         @ApiParam("Level of detail of the response")
         @RequestParam(defaultValue = "SUMMARY") Projection projection,
         @ApiParam("Page size of the result list")
@@ -82,15 +85,16 @@ public class MutationController {
 
         if (projection == Projection.META) {
             HttpHeaders responseHeaders = new HttpHeaders();
-            MutationMeta mutationMeta = mutationService.getMetaMutationsInMolecularProfileBySampleListId(molecularProfileId, sampleListId, null);
+            MutationMeta mutationMeta = mutationService.getMetaMutationsInMolecularProfileBySampleListId(
+                molecularProfileId, sampleListId, entrezGeneId == null ? null : Arrays.asList(entrezGeneId));
             responseHeaders.add(HeaderKeyConstants.TOTAL_COUNT, mutationMeta.getTotalCount().toString());
             responseHeaders.add(HeaderKeyConstants.SAMPLE_COUNT, mutationMeta.getSampleCount().toString());
             return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
         } else {
             return new ResponseEntity<>(
-                mutationService.getMutationsInMolecularProfileBySampleListId(molecularProfileId, sampleListId, null, null,
-                    projection.name(), pageSize, pageNumber, sortBy == null ? null : sortBy.getOriginalValue(),
-                    direction.name()), HttpStatus.OK);
+                mutationService.getMutationsInMolecularProfileBySampleListId(molecularProfileId, sampleListId, 
+                    entrezGeneId == null ? null : Arrays.asList(entrezGeneId), null, projection.name(), pageSize, 
+                    pageNumber, sortBy == null ? null : sortBy.getOriginalValue(), direction.name()), HttpStatus.OK);
         }
     }
 
@@ -152,7 +156,8 @@ public class MutationController {
         consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @ApiOperation("Fetch mutations in multiple molecular profiles by sample IDs")
     public ResponseEntity<List<Mutation>> fetchMutationsInMultipleMolecularProfiles(
-        @ApiParam(required = true, value = "List of Molecular Profile ID and Sample ID pairs and Entrez Gene IDs")
+        @ApiParam(required = true, value = "List of Molecular Profile IDs or List of Molecular Profile ID / Sample ID pairs," +
+            " and List of Entrez Gene IDs")
         @Valid @RequestBody MutationMultipleStudyFilter mutationMultipleStudyFilter,
         @ApiParam("Level of detail of the response")
         @RequestParam(defaultValue = "SUMMARY") Projection projection,
