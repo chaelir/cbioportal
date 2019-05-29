@@ -1,7 +1,11 @@
 ## [Intermountain Precision Genomics](https://intermountainhealthcare.org/services/cancer-care/precision-genomics/)
+Intermountain Precision Genomics provides a personalized approach to testing, diagnosing, and treating cancer.
+Our team approach gives oncologists the information and support they need to prepare a customized, targeted treatment plan and deliver the highest-quality care at some of the lowest costs in the nation, all while helping patients to live the healthiest lives possible.
 
 ## [Ji Research Group](https://dna-discovery.stanford.edu)
+To improve the lives of individuals with cancer, we have embarked on a research initiative to use cutting edge genetics and technology to interrogate the fundamental genetic "digital" code responsible for cancer development and overall clinical behavior.
 
+## cBioPortal Software
 The cBioPortal for Cancer Genomics was originally developed at [Memorial Sloan Kettering Cancer Center](http://www.mskcc.org/) (MSK). The [public cBioPortal site](http://cbioportal.org) is hosted by the [Center for Molecular Oncology](http://www.mskcc.org/research/molecular-oncology) at MSK. The cBioPortal software is now available under an open source license via [GitHub](https://github.com/cBioPortal/cbioportal/). The software is now developed and maintained by a multi-institutional team, consisting of MSK, the Dana Farber Cancer Institute, Princess Margaret Cancer Centre in Toronto, Children's Hospital of Philadelphia, [The Hyve](http://thehyve.nl) in the Netherlands, and Bilkent University in Ankara, Turkey.
 
 ## Memorial Sloan Kettering Cancer Center
