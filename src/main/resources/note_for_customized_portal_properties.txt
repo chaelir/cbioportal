@@ -1,0 +1,1 @@
+For manual build, portal.properties needs to be copied from custom.portal.properties and the app name and database info needs to be filled in. 
